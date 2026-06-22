@@ -28,10 +28,16 @@ class StorageService {
     return path.join(env.UPLOAD_DIR, 'customers', folder, categoryId.toString(), 'results');
   }
 
+  sanitizeFilename(name) {
+    const base = path.basename(name);
+    return base.replace(/[/\\:*?"<>|]/g, '_');
+  }
+
   async saveSubmission(file, customerId, categoryId) {
     const dir = await this.getSubmissionDir(customerId, categoryId);
     this.ensureDir(dir);
-    const fileName = `${Date.now()}_${file.originalname}`;
+    const safeName = this.sanitizeFilename(file.originalname);
+    const fileName = `${Date.now()}_${safeName}`;
     const storedPath = path.join(dir, fileName);
     fs.renameSync(file.path, storedPath);
     return { storedPath, originalName: file.originalname, mimeType: file.mimetype, fileSize: file.size };
@@ -40,7 +46,8 @@ class StorageService {
   async saveResult(file, customerId, categoryId) {
     const dir = await this.getResultDir(customerId, categoryId);
     this.ensureDir(dir);
-    const fileName = `${Date.now()}_${file.originalname}`;
+    const safeName = this.sanitizeFilename(file.originalname);
+    const fileName = `${Date.now()}_${safeName}`;
     const storedPath = path.join(dir, fileName);
     fs.renameSync(file.path, storedPath);
     return { storedPath, originalName: file.originalname, mimeType: file.mimetype, fileSize: file.size };
@@ -66,7 +73,8 @@ class StorageService {
   async saveDepartmentResult(file, customerId, categoryId) {
     const dir = await this.getResultDir(customerId, categoryId);
     this.ensureDir(dir);
-    const fileName = `${Date.now()}_${file.originalname}`;
+    const safeName = this.sanitizeFilename(file.originalname);
+    const fileName = `${Date.now()}_${safeName}`;
     const storedPath = path.join(dir, fileName);
     fs.renameSync(file.path, storedPath);
     return { storedPath, originalName: file.originalname, mimeType: file.mimetype, fileSize: file.size };

@@ -172,7 +172,7 @@ export const getDocuments = async (req, res) => {
   const customerId = req.user._id;
   const { categoryId } = req.query;
   const query = { customerId, isDeleted: { $ne: true } };
-  if (categoryId) query.categoryId = categoryId;
+  if (categoryId && typeof categoryId === 'string') query.categoryId = categoryId;
 
   const docs = await Document.find(query)
     .populate('categoryId', 'name')

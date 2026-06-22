@@ -9,9 +9,9 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LogIn } from 'lucide-react-native';
 import { useAuth } from '../../src/context/AuthContext';
 
 export default function LoginScreen() {
@@ -54,7 +54,7 @@ export default function LoginScreen() {
             <Text style={styles.logoText}>CP</Text>
           </View>
           <Text style={styles.title}>Client Portal</Text>
-          <Text style={styles.subtitle}>Sign in to your account</Text>
+          <Text style={styles.subtitle}>Document Management System</Text>
         </View>
 
         <View style={styles.form}>
@@ -97,12 +97,15 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.buttonText}>Sign In</Text>
+              <View style={styles.buttonContent}>
+                <LogIn size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={styles.buttonText}>Sign In</Text>
+              </View>
             )}
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footer}>Document Management System</Text>
+        <Text style={styles.footer}>CA Consultancy Portal</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -111,7 +114,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0f4f8',
   },
   scrollContent: {
     flexGrow: 1,
@@ -144,48 +147,54 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0f172a',
     marginBottom: 4,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#64748b',
   },
   form: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   errorBox: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 8,
+    backgroundColor: '#fef2f2',
+    borderRadius: 10,
     padding: 12,
     marginBottom: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: '#dc2626',
   },
   errorText: {
     color: '#dc2626',
     fontSize: 13,
     textAlign: 'center',
+    fontWeight: '500',
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#334155',
+    color: '#64748b',
     marginBottom: 6,
     marginTop: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
     backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    borderRadius: 10,
-    paddingHorizontal: 14,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     paddingVertical: Platform.OS === 'ios' ? 14 : 10,
     fontSize: 15,
     color: '#0f172a',
@@ -193,23 +202,27 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#2563eb',
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
     shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   buttonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   footer: {
     textAlign: 'center',

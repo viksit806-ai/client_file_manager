@@ -13,6 +13,14 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  User,
+  Lock,
+  LogOut,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
+} from 'lucide-react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { authAPI } from '../../src/lib/api';
 
@@ -68,13 +76,16 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <Text style={styles.screenTitle}>Profile</Text>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+            <ArrowLeft size={20} color="#2563eb" />
+          </TouchableOpacity>
+          <Text style={styles.screenTitle}>Settings</Text>
+        </View>
 
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {(user?.name || 'U').charAt(0).toUpperCase()}
-            </Text>
+            <User size={32} color="#ffffff" />
           </View>
           <Text style={styles.name}>{user?.name || 'User'}</Text>
           <Text style={styles.email}>{user?.email || ''}</Text>
@@ -88,57 +99,60 @@ export default function ProfileScreen() {
           onPress={() => setShowChangePassword(!showChangePassword)}
           activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Change Password</Text>
-          <Text style={styles.menuArrow}>{showChangePassword ? '\u25B2' : '\u25BC'}</Text>
+          <View style={styles.menuItemLeft}>
+            <Lock size={18} color="#64748b" style={{ marginRight: 12 }} />
+            <Text style={styles.menuItemText}>Change Password</Text>
+          </View>
+          {showChangePassword ? (
+            <ChevronUp size={18} color="#94a3b8" />
+          ) : (
+            <ChevronDown size={18} color="#94a3b8" />
+          )}
         </TouchableOpacity>
 
         {showChangePassword && (
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          >
-            <View style={styles.passwordSection}>
-              {error ? (
-                <View style={styles.errorBox}>
-                  <Text style={styles.errorText}>{error}</Text>
-                </View>
-              ) : null}
+          <View style={styles.passwordSection}>
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
 
-              <Text style={styles.inputLabel}>Current Password</Text>
-              <TextInput
-                style={styles.input}
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                placeholder="Enter current password"
-                placeholderTextColor="#94a3b8"
-                secureTextEntry
-                editable={!changing}
-              />
+            <Text style={styles.inputLabel}>Current Password</Text>
+            <TextInput
+              style={styles.input}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              placeholder="Enter current password"
+              placeholderTextColor="#94a3b8"
+              secureTextEntry
+              editable={!changing}
+            />
 
-              <Text style={styles.inputLabel}>New Password</Text>
-              <TextInput
-                style={styles.input}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                placeholder="Min 6 characters"
-                placeholderTextColor="#94a3b8"
-                secureTextEntry
-                editable={!changing}
-              />
+            <Text style={styles.inputLabel}>New Password</Text>
+            <TextInput
+              style={styles.input}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              placeholder="Min 6 characters"
+              placeholderTextColor="#94a3b8"
+              secureTextEntry
+              editable={!changing}
+            />
 
-              <TouchableOpacity
-                style={[styles.saveButton, changing && styles.disabledButton]}
-                onPress={handleChangePassword}
-                disabled={changing}
-                activeOpacity={0.8}
-              >
-                {changing ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <Text style={styles.saveButtonText}>Update Password</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
+            <TouchableOpacity
+              style={[styles.saveButton, changing && styles.disabledButton]}
+              onPress={handleChangePassword}
+              disabled={changing}
+              activeOpacity={0.8}
+            >
+              {changing ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text style={styles.saveButtonText}>Update Password</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         )}
 
         <TouchableOpacity
@@ -146,6 +160,7 @@ export default function ProfileScreen() {
           onPress={handleLogout}
           activeOpacity={0.8}
         >
+          <LogOut size={18} color="#dc2626" style={{ marginRight: 8 }} />
           <Text style={styles.logoutText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -156,18 +171,37 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0f4f8',
   },
   scrollContent: {
-    padding: 16,
+    padding: 20,
     paddingBottom: 48,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   screenTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0f172a',
-    marginBottom: 20,
-    marginTop: 12,
+    letterSpacing: -0.5,
   },
   profileCard: {
     backgroundColor: '#ffffff',
@@ -176,10 +210,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
   avatar: {
     width: 64,
@@ -190,14 +224,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  avatarText: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
   name: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#0f172a',
     marginBottom: 2,
   },
@@ -220,7 +249,7 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -232,18 +261,18 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   menuItemText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#0f172a',
-  },
-  menuArrow: {
-    fontSize: 12,
-    color: '#64748b',
   },
   passwordSection: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
@@ -253,7 +282,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   errorBox: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: '#fef2f2',
     borderRadius: 8,
     padding: 10,
     marginBottom: 12,
@@ -264,11 +293,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   inputLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#334155',
+    color: '#64748b',
     marginBottom: 6,
     marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   input: {
     backgroundColor: '#f8fafc',
@@ -297,12 +328,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   logoutButton: {
+    flexDirection: 'row',
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#fee2e2',
+    borderColor: '#fef2f2',
     marginTop: 8,
   },
   logoutText: {

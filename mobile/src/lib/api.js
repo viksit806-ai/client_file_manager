@@ -38,6 +38,7 @@ export const authAPI = {
 
 export const customerAPI = {
   getDepartments: () => api.get('/customer/departments'),
+  getCategories: () => api.get('/customer/categories'),
   getDocuments: (params) => api.get('/customer/documents', { params }),
   uploadDocument: (formData) =>
     api.post('/customer/upload', formData, {

@@ -232,7 +232,7 @@ export default function CustomersPage() {
             {passwordMode === 'manual' && (
               <div>
                 <label className="block text-sm font-medium mb-1">{editCustomer ? 'New Password' : 'Password'}</label>
-                <input type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Min 6 characters" minLength={6} />
+                <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Min 8 characters" minLength={8} />
               </div>
             )}
             {passwordMode === 'auto' && (

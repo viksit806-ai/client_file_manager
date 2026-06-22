@@ -20,14 +20,35 @@ export default function CustomerUploadPage() {
       .catch(console.error);
   }, []);
 
+  const ALLOWED_TYPES = [
+    'application/pdf',
+    'image/jpeg', 'image/png', 'image/jpg',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+  ];
+  const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (files.length + selectedFiles.length > 10) {
       toast.error('You can upload at most 10 files at once.');
       return;
     }
+    const invalid = selectedFiles.filter(f => !ALLOWED_TYPES.includes(f.type));
+    if (invalid.length > 0) {
+      toast.error(`File type not allowed: ${invalid.map(f => f.name).join(', ')}. Allowed: PDF, images, Word, Excel, text.`);
+      return;
+    }
+    const oversized = selectedFiles.filter(f => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast.error(`File too large: ${oversized.map(f => f.name).join(', ')}. Maximum size is 50MB per file.`);
+      return;
+    }
     setFiles(prev => [...prev, ...selectedFiles]);
-    if (e.target) e.target.value = ''; // Reset input so same file can be selected again
+    if (e.target) e.target.value = '';
   };
 
   const handleUpload = async (e) => {

@@ -208,6 +208,11 @@ export const uploadFilesToFolder = async (req, res) => {
   const refDoc = await Document.findOne({ groupId });
   if (!refDoc) throw new AppError('Folder group not found', 404);
 
+  // Department users can only upload to their own department's groups
+  if (req.user.role === 'department' && refDoc.departmentId?.toString() !== req.user.departmentId?.toString()) {
+    throw new AppError('You do not have permission to upload to this folder', 403);
+  }
+
   const effectiveCustomerId = refDoc.customerId;
   const effectiveDepartmentId = refDoc.departmentId;
 

@@ -13,7 +13,7 @@ const auth = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('+password');
+    const user = await User.findById(decoded.id);
     if (!user || !user.isActive) {
       throw new AppError('User not found or inactive', 401);
     }

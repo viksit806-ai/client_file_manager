@@ -71,7 +71,9 @@ export const getDashboard = async (req, res) => {
 export const getCustomers = async (req, res) => {
   const { search, status } = req.query;
   const query = { role: 'customer' };
-  if (search) query.name = { $regex: search, $options: 'i' };
+  if (search && typeof search === 'string') {
+    query.name = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+  }
   if (status === 'active') query.isActive = true;
   if (status === 'inactive') query.isActive = false;
 
@@ -98,7 +100,7 @@ export const createCustomer = async (req, res) => {
 
   res.status(201).json({
     success: true,
-    data: { ...customer.toJSON(), plainPassword: password },
+    data: customer.toJSON(),
     message: 'Customer created successfully',
   });
 };
@@ -137,7 +139,6 @@ export const resetCustomerPassword = async (req, res) => {
 
   res.json({
     success: true,
-    data: { plainPassword: newPassword },
     message: 'Password reset successfully',
   });
 };
@@ -145,8 +146,8 @@ export const resetCustomerPassword = async (req, res) => {
 export const setCustomerPassword = async (req, res) => {
   const { id } = req.params;
   const { password } = req.body;
-  if (!password || password.length < 6) {
-    throw new AppError('Password must be at least 6 characters', 400);
+  if (!password || password.length < 8) {
+    throw new AppError('Password must be at least 8 characters', 400);
   }
 
   const customer = await User.findOne({ _id: id, role: 'customer' });
@@ -227,7 +228,7 @@ export const updateDepartmentPermissions = async (req, res) => {
 export const getDepartmentUsers = async (req, res) => {
   const { deptId } = req.query;
   const query = { role: 'department' };
-  if (deptId) query.departmentId = deptId;
+  if (deptId && typeof deptId === 'string') query.departmentId = deptId;
 
   const users = await User.find(query)
     .populate('departmentId', 'name')
@@ -269,7 +270,7 @@ export const createDepartmentUser = async (req, res) => {
 
   res.status(201).json({
     success: true,
-    data: { ...user.toJSON(), plainPassword: password },
+    data: user.toJSON(),
   });
 };
 
@@ -304,14 +305,14 @@ export const resetDeptUserPassword = async (req, res) => {
   user.mustChangePassword = true;
   await user.save();
 
-  res.json({ success: true, data: { plainPassword: newPassword } });
+  res.json({ success: true, message: 'Password reset successfully' });
 };
 
 export const setDeptUserPassword = async (req, res) => {
   const { id } = req.params;
   const { password } = req.body;
-  if (!password || password.length < 6) {
-    throw new AppError('Password must be at least 6 characters', 400);
+  if (!password || password.length < 8) {
+    throw new AppError('Password must be at least 8 characters', 400);
   }
 
   const user = await User.findOne({ _id: id, role: 'department' });
@@ -327,7 +328,7 @@ export const setDeptUserPassword = async (req, res) => {
 export const getCategories = async (req, res) => {
   const { deptId } = req.query;
   const query = {};
-  if (deptId) query.departmentId = deptId;
+  if (deptId && typeof deptId === 'string') query.departmentId = deptId;
 
   const categories = await Category.find(query)
     .populate('departmentId', 'name')
@@ -389,10 +390,10 @@ export const getAllDocuments = async (req, res) => {
   const { departmentId, categoryId, status, customerId, search } = req.query;
   const query = { isDeleted: { $ne: true } };
 
-  if (departmentId) query.departmentId = departmentId;
-  if (categoryId) query.categoryId = categoryId;
-  if (status) query.status = status;
-  if (customerId) query.customerId = customerId;
+  if (departmentId && typeof departmentId === 'string') query.departmentId = departmentId;
+  if (categoryId && typeof categoryId === 'string') query.categoryId = categoryId;
+  if (status && typeof status === 'string') query.status = status;
+  if (customerId && typeof customerId === 'string') query.customerId = customerId;
 
   const docs = await Document.find(query)
     .populate('customerId', 'name email')

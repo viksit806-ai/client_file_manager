@@ -15,6 +15,9 @@ export const login = async (req, res) => {
   if (!email || !password) {
     throw new AppError('Email and password are required', 400);
   }
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    throw new AppError('Invalid credentials', 401);
+  }
 
   const user = await User.findOne({ email });
   if (!user || !user.isActive) {
@@ -42,8 +45,8 @@ export const changePassword = async (req, res) => {
   if (!currentPassword || !newPassword) {
     throw new AppError('Current password and new password are required', 400);
   }
-  if (newPassword.length < 6) {
-    throw new AppError('New password must be at least 6 characters', 400);
+  if (newPassword.length < 8) {
+    throw new AppError('New password must be at least 8 characters', 400);
   }
 
   const user = await User.findById(req.user._id);

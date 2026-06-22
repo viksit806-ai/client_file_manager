@@ -73,3 +73,54 @@ export function truncateText(text, maxLength = 50) {
   if (!text || text.length <= maxLength) return text || '';
   return text.substring(0, maxLength) + '...';
 }
+
+const SLA_HOURS = 48;
+const WARNING_HOURS = 12;
+
+export function getSlaStatus(createdAt, docStatus) {
+  if (!createdAt) return 'unknown';
+  if (docStatus === 'completed') return 'completed';
+  if (docStatus === 'blocked') return 'blocked';
+  const now = Date.now();
+  const deadline = new Date(createdAt).getTime() + SLA_HOURS * 60 * 60 * 1000;
+  const remaining = deadline - now;
+  if (remaining <= 0) return 'overdue';
+  if (remaining <= WARNING_HOURS * 60 * 60 * 1000) return 'approaching';
+  return 'within_sla';
+}
+
+export function getSlaColor(slaStatus) {
+  const map = {
+    within_sla: '#059669',
+    approaching: '#d97706',
+    overdue: '#dc2626',
+    completed: '#64748b',
+    blocked: '#64748b',
+    unknown: '#64748b',
+  };
+  return map[slaStatus] || '#64748b';
+}
+
+export function getSlaBg(slaStatus) {
+  const map = {
+    within_sla: '#d1fae5',
+    approaching: '#fef3c7',
+    overdue: '#fee2e2',
+    completed: '#f1f5f9',
+    blocked: '#f1f5f9',
+    unknown: '#f1f5f9',
+  };
+  return map[slaStatus] || '#f1f5f9';
+}
+
+export function getSlaLabel(slaStatus) {
+  const map = {
+    within_sla: 'Within SLA',
+    approaching: 'Approaching Deadline',
+    overdue: 'Overdue',
+    completed: 'Completed',
+    blocked: 'Blocked',
+    unknown: 'Unknown',
+  };
+  return map[slaStatus] || slaStatus;
+}

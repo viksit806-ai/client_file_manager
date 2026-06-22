@@ -12,23 +12,26 @@ export default function StatCard({ label, value, color = '#2563eb' }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     borderLeftWidth: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 2,
   },
   value: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '800',
     marginBottom: 2,
+    letterSpacing: -0.5,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748b',
-    fontWeight: '500',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });

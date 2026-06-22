@@ -1,22 +1,29 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Upload,
+  FileText,
+} from 'lucide-react-native';
 
-function TabIcon({ label, focused }) {
-  const icons = {
-    Dashboard: focused ? '\u25A0' : '\u25A1',
-    Documents: focused ? '\u25B6' : '\u25B7',
-    Upload: focused ? '\u25B2' : '\u25B3',
-    Profile: focused ? '\u25CF' : '\u25CB',
-  };
-
+function TabIcon({ icon: Icon, label, focused }) {
   return (
     <View style={styles.tabItem}>
-      <Text style={[styles.tabIcon, focused && styles.tabIconFocused]}>
-        {icons[label] || '\u25C6'}
-      </Text>
-      <Text style={[styles.tabLabel, focused && styles.tabLabelFocused]}>
+      <Icon
+        size={focused ? 22 : 20}
+        color={focused ? '#2563eb' : '#94a3b8'}
+        strokeWidth={focused ? 2.5 : 1.5}
+      />
+      <Text
+        style={[
+          styles.tabLabel,
+          focused && styles.tabLabelFocused,
+        ]}
+      >
         {label}
       </Text>
+      {focused ? <View style={styles.activeIndicator} /> : null}
     </View>
   );
 }
@@ -33,19 +40,39 @@ export default function TabLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Dashboard" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={LayoutDashboard} label="Dashboard" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="categories"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={FolderKanban} label="Categories" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="upload"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={Upload} label="Upload" focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="documents"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Documents" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={FileText} label="Documents" focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Profile" focused={focused} />,
+          href: null,
         }}
       />
     </Tabs>
@@ -57,34 +84,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
-    paddingTop: 6,
-    paddingBottom: 8,
-    height: 60,
+    paddingTop: 8,
+    paddingBottom: 10,
+    height: 64,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 6,
   },
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tabIcon: {
-    fontSize: 18,
-    color: '#94a3b8',
-    marginBottom: 2,
-  },
-  tabIconFocused: {
-    color: '#2563eb',
+    paddingTop: 2,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#94a3b8',
     fontWeight: '500',
+    marginTop: 2,
   },
   tabLabelFocused: {
     color: '#2563eb',
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: -8,
+    width: 20,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#2563eb',
   },
 });

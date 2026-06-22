@@ -7,10 +7,10 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Upload, FileText, Settings } from 'lucide-react-native';
 import { customerAPI } from '../../src/lib/api';
 import { useAuth } from '../../src/context/AuthContext';
 import StatCard from '../../src/components/StatCard';
@@ -68,8 +68,19 @@ export default function DashboardScreen() {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.greeting}>Welcome, {user?.name || 'User'}</Text>
-          <Text style={styles.subtitle}>Document Management Dashboard</Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerText}>
+              <Text style={styles.greeting}>Welcome, {user?.name || 'User'}</Text>
+              <Text style={styles.subtitle}>Document Management Dashboard</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/profile')}
+              style={styles.iconBtn}
+              activeOpacity={0.7}
+            >
+              <Settings size={20} color="#64748b" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.statsGrid}>
@@ -94,13 +105,15 @@ export default function DashboardScreen() {
         <View style={styles.actions}>
           <TouchableOpacity
             style={[styles.actionCard, { backgroundColor: '#2563eb' }]}
-            onPress={() => router.push('/upload')}
+            onPress={() => router.push('/(tabs)/upload')}
             activeOpacity={0.8}
           >
-            <Text style={styles.actionIcon}>+</Text>
+            <View style={styles.actionIconWrap}>
+              <Upload size={22} color="#ffffff" />
+            </View>
             <View>
-              <Text style={styles.actionTitle}>Upload Document</Text>
-              <Text style={styles.actionDesc}>Submit files to any department</Text>
+              <Text style={styles.actionTitle}>Upload Documents</Text>
+              <Text style={styles.actionDesc}>Submit your documents to any department</Text>
             </View>
           </TouchableOpacity>
 
@@ -109,18 +122,26 @@ export default function DashboardScreen() {
             onPress={() => router.push('/(tabs)/documents')}
             activeOpacity={0.8}
           >
-            <Text style={styles.actionIcon}>=</Text>
+            <View style={styles.actionIconWrap}>
+              <FileText size={22} color="#ffffff" />
+            </View>
             <View>
               <Text style={styles.actionTitle}>My Documents</Text>
-              <Text style={styles.actionDesc}>View status and download files</Text>
+              <Text style={styles.actionDesc}>View status and download processed files</Text>
             </View>
           </TouchableOpacity>
         </View>
 
         <View style={styles.recentSection}>
-          <Text style={styles.sectionTitle}>Recent Documents</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Documents</Text>
+            <Text style={styles.sectionCount}>
+              {documents.length > 5 ? `Top 5 of ${documents.length}` : `${documents.length} total`}
+            </Text>
+          </View>
           {recentDocs.length === 0 ? (
             <View style={styles.emptyState}>
+              <FileText size={36} color="#cbd5e1" />
               <Text style={styles.emptyText}>No documents yet</Text>
               <Text style={styles.emptySubtext}>Upload your first document to get started</Text>
             </View>
@@ -142,30 +163,52 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0f4f8',
   },
   loader: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0f4f8',
   },
   scrollContent: {
-    padding: 16,
+    padding: 20,
     paddingBottom: 32,
   },
   header: {
     marginBottom: 24,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerText: {
+    flex: 1,
+  },
   greeting: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 26,
+    fontWeight: '800',
     color: '#0f172a',
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
     color: '#64748b',
     marginTop: 2,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   statsGrid: {
     marginBottom: 20,
@@ -184,7 +227,7 @@ const styles = StyleSheet.create({
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 18,
     marginBottom: 10,
     shadowColor: '#000',
@@ -193,17 +236,18 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  actionIcon: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#ffffff',
+  actionIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 14,
-    width: 32,
-    textAlign: 'center',
   },
   actionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#ffffff',
   },
   actionDesc: {
@@ -214,15 +258,26 @@ const styles = StyleSheet.create({
   recentSection: {
     marginBottom: 16,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#0f172a',
-    marginBottom: 12,
+    letterSpacing: -0.3,
+  },
+  sectionCount: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '500',
   },
   emptyState: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 32,
     alignItems: 'center',
     shadowColor: '#000',
@@ -235,6 +290,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#64748b',
+    marginTop: 10,
   },
   emptySubtext: {
     fontSize: 13,

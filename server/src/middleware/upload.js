@@ -24,6 +24,27 @@ const storage = multer.diskStorage({
   },
 });
 
+const MAGIC_BYTES = {
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]],
+  'image/jpeg': [[0xFF, 0xD8, 0xFF]],
+  'image/png': [[0x89, 0x50, 0x4E, 0x47]],
+  'application/msword': [[0xD0, 0xCF, 0x11, 0xE0], [0x50, 0x4B, 0x03, 0x04]],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [[0x50, 0x4B, 0x03, 0x04]],
+  'application/vnd.ms-excel': [[0xD0, 0xCF, 0x11, 0xE0], [0x50, 0x4B, 0x03, 0x04]],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [[0x50, 0x4B, 0x03, 0x04]],
+  'text/plain': [],
+};
+
+const validateMagicBytes = (filePath, mimeType) => {
+  const signatures = MAGIC_BYTES[mimeType];
+  if (!signatures || signatures.length === 0) return true;
+  const fd = fs.openSync(filePath, 'r');
+  const buffer = Buffer.alloc(8);
+  fs.readSync(fd, buffer, 0, 8, 0);
+  fs.closeSync(fd);
+  return signatures.some((sig) => sig.every((byte, i) => buffer[i] === byte));
+};
+
 const fileFilter = (req, file, cb) => {
   const allowed = [
     'application/pdf',
@@ -34,11 +55,20 @@ const fileFilter = (req, file, cb) => {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'text/plain',
   ];
-  if (allowed.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new AppError('File type not allowed. Allowed: PDF, images, docs, sheets, text', 400), false);
+  if (!allowed.includes(file.mimetype)) {
+    return cb(new AppError('File type not allowed. Allowed: PDF, images, docs, sheets, text', 400), false);
   }
+  cb(null, true);
+};
+
+export const validateUploadedFiles = (req, res, next) => {
+  if (!req.files || req.files.length === 0) return next();
+  for (const file of req.files) {
+    if (!validateMagicBytes(file.path, file.mimetype)) {
+      return next(new AppError('File content does not match declared type', 400));
+    }
+  }
+  next();
 };
 
 const upload = multer({
