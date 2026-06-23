@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import {
   Search, Folder, FileText, ArrowLeft, ArrowRight, ArrowUp,
   ChevronRight, LayoutGrid, List, Info, X, Monitor, HardDrive, Pencil, Save,
+  PanelRight, PanelRightClose,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -28,6 +29,7 @@ export default function DeptCustomersExplorer() {
   const [sortField, setSortField] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [selectedItem, setSelectedItem] = useState(null);
+  const [panelOpen, setPanelOpen] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [editValue, setEditValue] = useState('');
 
@@ -48,7 +50,10 @@ export default function DeptCustomersExplorer() {
     !search || c.name?.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleItemClick = (item) => setSelectedItem(item);
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    setPanelOpen(true);
+  };
 
   const handleItemDoubleClick = (item) => {
     router.push(`/department/customers/${item.id}`);
@@ -167,6 +172,15 @@ export default function DeptCustomersExplorer() {
             <List className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {/* Panel Toggle */}
+        <button
+          onClick={() => setPanelOpen(!panelOpen)}
+          className="p-1.5 rounded hover:bg-gray-200 transition text-gray-500 hover:text-gray-700 shrink-0"
+          title={panelOpen ? 'Close panel' : 'Open panel'}
+        >
+          {panelOpen ? <PanelRightClose size={16} /> : <PanelRight size={16} />}
+        </button>
       </div>
 
       {/* Filter Chips */}
@@ -212,7 +226,7 @@ export default function DeptCustomersExplorer() {
                     selectedItem?.id === c._id ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Folder className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80 shrink-0" />
                   <span className="truncate" title={c.name}>{c.name}</span>
                 </button>
               ))}
@@ -228,7 +242,7 @@ export default function DeptCustomersExplorer() {
             </div>
           ) : sorted.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-2">
-              <Folder className="w-12 h-12 text-gray-200 stroke-1" />
+              <Folder className="w-12 h-12 text-amber-300 fill-amber-100/50" />
               <span className="text-xs font-semibold">No customers found</span>
             </div>
           ) : viewMode === 'grid' ? (
@@ -245,7 +259,7 @@ export default function DeptCustomersExplorer() {
                     }`}
                   >
                     <div className="relative">
-                      <Folder className="w-12 h-12 text-[#3b82f6] fill-[#ebf8ff]" />
+                      <Folder className="w-12 h-12 text-amber-600 fill-amber-200/80" />
                       <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
                         {c.totalDocs}
                       </span>
@@ -282,7 +296,7 @@ export default function DeptCustomersExplorer() {
                       className={`cursor-pointer ${selectedItem?.id === c._id ? 'bg-blue-50 font-semibold' : 'hover:bg-gray-50/50'}`}
                     >
                       <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
-                        <Folder className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                        <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80 shrink-0" />
                         <span className="truncate">{c.name}</span>
                       </td>
                       <td className="py-2 px-3 text-gray-500">{c.totalDocs || 0}</td>
@@ -303,19 +317,19 @@ export default function DeptCustomersExplorer() {
         </div>
 
         {/* Right Details Panel */}
-        <div className={`w-72 bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300 ${selectedItem ? 'opacity-100 translate-x-0' : 'lg:opacity-90 lg:block hidden bg-gray-50/30'}`}>
+        <div className={`${panelOpen ? 'w-72' : 'w-0 overflow-hidden'} bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300`}>
           {selectedItem ? (
             <div className="flex flex-col h-full gap-4 overflow-y-auto max-h-[850px] scrollbar-none pr-1">
 
               <div className="flex items-start justify-between">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer Info</span>
-                <button onClick={() => setSelectedItem(null)} className="p-0.5 text-gray-400 hover:bg-[#e5e7eb] rounded-full">
+                <button onClick={() => { setSelectedItem(null); setPanelOpen(false); }} className="p-0.5 text-gray-400 hover:bg-[#e5e7eb] rounded-full">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="p-6 bg-white border border-[#e5e7eb] rounded-lg flex items-center justify-center shadow-xs">
-                <Folder className="w-14 h-14 text-blue-400 fill-blue-50/50" />
+                <Folder className="w-14 h-14 text-amber-600 fill-amber-200/80" />
               </div>
 
               <div className="space-y-2">
@@ -360,7 +374,7 @@ export default function DeptCustomersExplorer() {
                   onClick={() => router.push(`/department/customers/${selectedItem.id}`)}
                   className="w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition flex items-center justify-center gap-1.5"
                 >
-                  <Folder className="w-3.5 h-3.5" />
+                  <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80" />
                   Open Customer Folder
                 </button>
               </div>

@@ -33,6 +33,8 @@ import {
   Pencil,
   Trash2,
   FolderPlus,
+  PanelRight,
+  PanelRightClose,
 } from 'lucide-react';
 
 export default function DeptCustomerDocsExplorer() {
@@ -58,6 +60,7 @@ export default function DeptCustomerDocsExplorer() {
   const [historyIndex, setHistoryIndex] = useState(0); // Current pointer
   
   const [selectedItem, setSelectedItem] = useState(null); // Selected file or folder
+  const [panelOpen, setPanelOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCat, setSelectedCat] = useState('');
   const [notes, setNotes] = useState('');
@@ -341,6 +344,7 @@ export default function DeptCustomerDocsExplorer() {
         toast.success('Result file deleted successfully');
       }
       setSelectedItem(null);
+      setPanelOpen(false);
       loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete');
@@ -354,6 +358,7 @@ export default function DeptCustomerDocsExplorer() {
     setHistoryIndex(updatedHistory.length - 1);
     setCurrentPath(newPath);
     setSelectedItem(null);
+    setPanelOpen(false);
   };
 
   const handleBack = () => {
@@ -362,6 +367,7 @@ export default function DeptCustomerDocsExplorer() {
       setHistoryIndex(idx);
       setCurrentPath(history[idx]);
       setSelectedItem(null);
+      setPanelOpen(false);
     }
   };
 
@@ -371,6 +377,7 @@ export default function DeptCustomerDocsExplorer() {
       setHistoryIndex(idx);
       setCurrentPath(history[idx]);
       setSelectedItem(null);
+      setPanelOpen(false);
     }
   };
 
@@ -502,6 +509,7 @@ export default function DeptCustomerDocsExplorer() {
 
   const handleSelectItem = (item) => {
     setSelectedItem(item);
+    setPanelOpen(true);
     if (item.type === 'submission' || item.type === 'result') {
       setNotes(item.doc.notes || '');
     } else {
@@ -526,6 +534,7 @@ export default function DeptCustomerDocsExplorer() {
     };
     navigateToPath([{ id: req.id, name: req.name, type: 'request' }]);
     setSelectedItem(folderItem);
+    setPanelOpen(true);
   };
 
   return (
@@ -644,6 +653,15 @@ export default function DeptCustomerDocsExplorer() {
               </button>
             </div>
           )}
+
+          {/* Panel Toggle */}
+          <button
+            onClick={() => setPanelOpen(!panelOpen)}
+            className="p-1.5 rounded hover:bg-gray-200 transition text-gray-500 hover:text-gray-700 shrink-0"
+            title={panelOpen ? 'Close panel' : 'Open panel'}
+          >
+            {panelOpen ? <PanelRightClose size={16} /> : <PanelRight size={16} />}
+          </button>
         </div>
 
         {/* Workspace split into Sidebar, Files List, Details */}
@@ -686,7 +704,7 @@ export default function DeptCustomerDocsExplorer() {
                       onClick={() => handleSidebarRequestClick(req)}
                       className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${isActive ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'}`}
                     >
-                      <Folder className="w-3.5 h-3.5 text-blue-400 fill-blue-50/50" />
+                      <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80" />
                       <span className="truncate" title={req.name}>{req.name}</span>
                       {req.slaStatus && ['overdue', 'approaching'].includes(req.slaStatus) && (
                         <span className={`ml-auto text-[9px] font-bold px-1 py-0.5 rounded ${
@@ -809,7 +827,7 @@ export default function DeptCustomerDocsExplorer() {
                           className={`cursor-pointer ${selectedItem?.id === d._id ? 'bg-blue-50 font-medium' : 'hover:bg-gray-50/50'}`}
                         >
                           <td className="py-2.5 px-2 flex items-center gap-2 max-w-xs">
-                            <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                            <FileText className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
                             <span className="truncate">{d.title || d.originalName}</span>
                           </td>
                           <td className="py-2.5 px-2 text-gray-500 capitalize">Submission File</td>
@@ -828,7 +846,7 @@ export default function DeptCustomerDocsExplorer() {
               <div className="flex-1">
                 {explorerItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-2">
-                    <Folder className="w-12 h-12 text-gray-200 stroke-1" />
+                    <Folder className="w-12 h-12 text-amber-300 fill-amber-100/50" />
                     <span className="text-xs font-semibold">Folder is empty</span>
                   </div>
                 ) : viewMode === 'grid' ? (
@@ -868,7 +886,7 @@ export default function DeptCustomerDocsExplorer() {
                         >
                           {isFolder ? (
                             <div className="relative">
-                              <Folder className="w-12 h-12 text-[#3b82f6] fill-[#ebf8ff]" />
+                              <Folder className="w-12 h-12 text-amber-600 fill-amber-200/80" />
                               <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
                                 {item.itemCount}
                               </span>
@@ -880,7 +898,7 @@ export default function DeptCustomerDocsExplorer() {
                             </div>
                           ) : (
                             <div className="relative">
-                              <FileText className="w-12 h-12 text-[#2563eb] fill-blue-50" />
+                              <FileText className="w-12 h-12 text-blue-600 fill-white" />
                               {item.doc?.resultFile && (
                                 <CheckCircle className="w-3 h-3 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
                               )}
@@ -942,11 +960,11 @@ export default function DeptCustomerDocsExplorer() {
                             >
                               <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
                                 {isFolder ? (
-                                  <Folder className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                  <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80 shrink-0" />
                                 ) : item.type === 'result' ? (
                                   <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
                                 ) : (
-                                  <File className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                  <File className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
                                 )}
                                 <span className="truncate">{item.name}</span>
                               </td>
@@ -970,7 +988,7 @@ export default function DeptCustomerDocsExplorer() {
           </div>
 
           {/* Right Details Panel */}
-          <div className={`w-72 bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300 ${selectedItem ? 'opacity-100 translate-x-0' : 'lg:opacity-90 lg:block hidden bg-gray-50/30'}`}>
+          <div className={`${panelOpen ? 'w-72' : 'w-0 overflow-hidden'} bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300`}>
             {selectedItem ? (
               <div className="flex flex-col h-full gap-4 overflow-y-auto max-h-[850px] scrollbar-none pr-1">
                 
@@ -978,7 +996,7 @@ export default function DeptCustomerDocsExplorer() {
                 <div className="flex items-start justify-between">
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">File Properties</span>
                   <button
-                    onClick={() => setSelectedItem(null)}
+                    onClick={() => { setSelectedItem(null); setPanelOpen(false); }}
                     className="p-0.5 text-gray-400 hover:bg-[#e5e7eb] rounded-full"
                   >
                     <X className="w-4 h-4" />
@@ -988,11 +1006,11 @@ export default function DeptCustomerDocsExplorer() {
                 {/* Preview Graphic */}
                 <div className="p-8 bg-white border border-[#e5e7eb] rounded-lg flex items-center justify-center shadow-xs">
                   {selectedItem.type === 'request' ? (
-                    <Folder className="w-12 h-12 text-blue-500" />
+                    <Folder className="w-12 h-12 text-amber-600 fill-amber-200/80" />
                   ) : selectedItem.type === 'result' ? (
                     <CheckCircle className="w-12 h-12 text-green-500" />
                   ) : (
-                    <FileText className="w-12 h-12 text-blue-500" />
+                    <FileText className="w-12 h-12 text-blue-600 fill-white" />
                   )}
                 </div>
 

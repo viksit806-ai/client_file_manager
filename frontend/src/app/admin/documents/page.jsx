@@ -30,6 +30,8 @@ import {
   AlertTriangle,
   FolderPlus,
   Upload,
+  PanelRight,
+  PanelRightClose,
 } from 'lucide-react';
 
 export default function AdminDocumentsExplorer() {
@@ -46,6 +48,7 @@ export default function AdminDocumentsExplorer() {
   const [historyIndex, setHistoryIndex] = useState(0); // Current pointer
   
   const [selectedItem, setSelectedItem] = useState(null); // selected folder or file
+  const [panelOpen, setPanelOpen] = useState(true);
   
   // Details pane edit form
   const [editForm, setEditForm] = useState({ title: '', notes: '', status: '' });
@@ -114,6 +117,7 @@ export default function AdminDocumentsExplorer() {
 
   const handleSelectItem = (item) => {
     setSelectedItem(item);
+    setPanelOpen(true);
     if (item.type === 'file') {
       setEditForm({
         title: item.doc.title || item.doc.originalName || '',
@@ -618,6 +622,15 @@ export default function AdminDocumentsExplorer() {
               </button>
             </div>
           )}
+
+          {/* Panel Toggle */}
+          <button
+            onClick={() => setPanelOpen(!panelOpen)}
+            className="p-1.5 rounded hover:bg-gray-200 transition text-gray-500 hover:text-gray-700 shrink-0"
+            title={panelOpen ? 'Close panel' : 'Open panel'}
+          >
+            {panelOpen ? <PanelRightClose size={16} /> : <PanelRight size={16} />}
+          </button>
         </div>
 
         {/* Windows Explorer Style Sub-Toolbar for Filters */}
@@ -693,7 +706,7 @@ export default function AdminDocumentsExplorer() {
                       onClick={() => handleSidebarCustomerClick(c)}
                       className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${isActive ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'}`}
                     >
-                      <Folder className="w-3.5 h-3.5 text-indigo-400 fill-indigo-50/50" />
+                      <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80" />
                       <span className="truncate" title={c.name}>{c.name}</span>
                     </button>
                   );
@@ -816,7 +829,7 @@ export default function AdminDocumentsExplorer() {
                             className={`cursor-pointer ${selectedItem?.id === doc._id ? 'bg-blue-50 font-medium' : 'hover:bg-gray-50/50'}`}
                           >
                             <td className="py-2.5 px-2 flex items-center gap-2 max-w-xs">
-                              <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                              <FileText className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
                               <span className="truncate">{doc.title || doc.originalName}</span>
                             </td>
                             <td className="py-2.5 px-2 text-gray-600">{doc.customerId?.name || 'Unknown'}</td>
@@ -837,7 +850,7 @@ export default function AdminDocumentsExplorer() {
               <div className="flex-1">
                 {explorerItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-2">
-                    <Folder className="w-12 h-12 text-gray-200 stroke-1" />
+                    <Folder className="w-12 h-12 text-amber-300 fill-amber-100/50" />
                     <span className="text-xs font-semibold">Folder is empty</span>
                   </div>
                 ) : viewMode === 'grid' ? (
@@ -880,10 +893,10 @@ export default function AdminDocumentsExplorer() {
                               <Folder
                                 className={`w-12 h-12 ${
                                   item.type === 'customer'
-                                    ? 'text-indigo-400 fill-indigo-50/50'
+                                    ? 'text-amber-600 fill-amber-200/80'
                                     : item.type === 'dept'
-                                    ? 'text-amber-400 fill-amber-100/50'
-                                    : 'text-blue-400 fill-blue-50/50'
+                                    ? 'text-amber-600 fill-amber-200/80'
+                                    : 'text-amber-600 fill-amber-200/80'
                                 }`}
                               />
                               <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
@@ -897,7 +910,7 @@ export default function AdminDocumentsExplorer() {
                             </div>
                           ) : (
                             <div className="relative">
-                              <FileText className="w-12 h-12 text-[#2563eb] fill-blue-50" />
+                              <FileText className="w-12 h-12 text-blue-600 fill-white" />
                               {item.doc?.resultFile && (
                                 <CheckCircle className="w-3 h-3 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
                               )}
@@ -962,16 +975,16 @@ export default function AdminDocumentsExplorer() {
                                   <Folder
                                     className={`w-3.5 h-3.5 shrink-0 ${
                                       item.type === 'customer'
-                                        ? 'text-indigo-400'
+                                        ? 'text-amber-600 fill-amber-200/80'
                                         : item.type === 'dept'
-                                        ? 'text-amber-500'
-                                        : 'text-blue-550'
+                                        ? 'text-amber-600 fill-amber-200/80'
+                                        : 'text-amber-600 fill-amber-200/80'
                                     }`}
                                   />
                                 ) : item.type === 'result_file' ? (
                                   <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
                                 ) : (
-                                  <File className="w-3.5 h-3.5 text-blue-550 shrink-0" />
+                                  <File className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
                                 )}
                                 <span className="truncate">{item.name}</span>
                               </td>
@@ -995,7 +1008,7 @@ export default function AdminDocumentsExplorer() {
           </div>
 
           {/* Right Details Panel */}
-          <div className={`w-72 bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300 ${selectedItem ? 'opacity-100 translate-x-0' : 'lg:opacity-90 lg:block hidden bg-gray-50/30'}`}>
+          <div className={`${panelOpen ? 'w-72' : 'w-0 overflow-hidden'} bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300`}>
             {selectedItem ? (
               <div className="flex flex-col h-full gap-4 overflow-y-auto max-h-[850px] scrollbar-none pr-1">
                 
@@ -1013,18 +1026,12 @@ export default function AdminDocumentsExplorer() {
                 {/* Preview Graphic */}
                 <div className="p-8 bg-white border border-[#e5e7eb] rounded-lg flex items-center justify-center shadow-xs">
                   {selectedItem.type === 'file' ? (
-                    <FileText className="w-12 h-12 text-blue-500" />
+                    <FileText className="w-12 h-12 text-blue-600 fill-white" />
                   ) : selectedItem.type === 'result_file' ? (
                     <CheckCircle className="w-12 h-12 text-green-500" />
                   ) : (
                     <Folder
-                      className={`w-12 h-12 ${
-                        selectedItem.type === 'customer'
-                          ? 'text-indigo-400'
-                          : selectedItem.type === 'dept'
-                          ? 'text-amber-400'
-                          : 'text-blue-500'
-                      }`}
+                      className={`w-12 h-12 text-amber-600 fill-amber-200/80`}
                     />
                   )}
                 </div>

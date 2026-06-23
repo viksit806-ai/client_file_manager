@@ -25,6 +25,8 @@ import {
   Search,
   Monitor,
   HardDrive,
+  PanelRight,
+  PanelRightClose,
 } from 'lucide-react';
 
 export default function CustomerDocumentsExplorer() {
@@ -41,13 +43,17 @@ export default function CustomerDocumentsExplorer() {
   const [historyIndex, setHistoryIndex] = useState(0); // Current pointer
   
   const [selectedItem, setSelectedItem] = useState(null); // selected folder or file
+  const [panelOpen, setPanelOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Sorting state
   const [sortField, setSortField] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
-
+  const selectItem = (item) => {
+    setSelectedItem(item);
+    setPanelOpen(true);
+  };
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -252,7 +258,7 @@ export default function CustomerDocumentsExplorer() {
       docs: dept.docs
     };
     navigateToPath([{ id: dept.id, name: dept.name, type: 'dept' }]);
-    setSelectedItem(folderItem);
+    selectItem(folderItem);
   };
 
   return (
@@ -355,24 +361,33 @@ export default function CustomerDocumentsExplorer() {
           </button>
         </div>
 
-        {/* Layout Mode Toggles */}
-        {!isSearching && (
-          <div className="flex border rounded bg-[#f3f4f6] p-0.5 shrink-0">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-1 rounded ${viewMode === 'grid' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-1 rounded ${viewMode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-      </div>
+          {/* Layout Mode Toggles */}
+          {!isSearching && (
+            <div className="flex border rounded bg-[#f3f4f6] p-0.5 shrink-0">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1 rounded ${viewMode === 'grid' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-1 rounded ${viewMode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Panel Toggle */}
+          <button
+            onClick={() => setPanelOpen(!panelOpen)}
+            className="p-1.5 rounded hover:bg-gray-200 transition text-gray-500 hover:text-gray-700 shrink-0"
+            title={panelOpen ? 'Close panel' : 'Open panel'}
+          >
+            {panelOpen ? <PanelRightClose size={16} /> : <PanelRight size={16} />}
+          </button>
+        </div>
 
       {/* Workspace Area split into Sidebar, Files List, Details */}
       <div className="flex flex-row flex-1 overflow-hidden">
@@ -403,7 +418,7 @@ export default function CustomerDocumentsExplorer() {
                     onClick={() => handleSidebarDeptClick(dept)}
                     className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${isActive ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'}`}
                   >
-                    <Folder className="w-3.5 h-3.5 text-amber-500 fill-amber-100/50" />
+                    <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80" />
                     <span className="truncate">{dept.name}</span>
                   </button>
                 );
@@ -448,11 +463,11 @@ export default function CustomerDocumentsExplorer() {
                     }).map((d) => (
                       <tr
                         key={d._id}
-                        onClick={() => setSelectedItem({ id: d._id, name: d.title || d.originalName, type: 'submission', doc: d })}
+                        onClick={() => selectItem({ id: d._id, name: d.title || d.originalName, type: 'submission', doc: d })}
                         className={`cursor-pointer ${selectedItem?.id === d._id ? 'bg-blue-50 font-medium' : 'hover:bg-gray-50/50'}`}
                       >
                         <td className="py-2.5 px-2 flex items-center gap-2 max-w-xs">
-                          <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                          <FileText className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
                           <span className="truncate">{d.title || d.originalName}</span>
                         </td>
                         <td className="py-2.5 px-2 text-gray-500 capitalize">Submission File</td>
@@ -471,7 +486,7 @@ export default function CustomerDocumentsExplorer() {
             <div className="flex-1">
               {explorerItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-2">
-                  <Folder className="w-12 h-12 text-gray-200 stroke-1" />
+                  <Folder className="w-12 h-12 text-amber-300 fill-amber-100/50" />
                   <span className="text-xs font-semibold">Folder is empty</span>
                 </div>
               ) : viewMode === 'grid' ? (
@@ -501,7 +516,7 @@ export default function CustomerDocumentsExplorer() {
                     return (
                       <div
                         key={item.id}
-                        onClick={() => setSelectedItem(item)}
+                        onClick={() => selectItem(item)}
                         onDoubleClick={() => handleItemDoubleClick(item)}
                         className={`flex flex-col items-center text-center p-3 border rounded-lg cursor-pointer transition select-none ${
                           isSelected
@@ -511,7 +526,7 @@ export default function CustomerDocumentsExplorer() {
                       >
                         {isFolder ? (
                           <div className="relative">
-                            <Folder className={`w-12 h-12 ${item.type === 'request' ? 'text-[#3b82f6] fill-[#ebf8ff]' : 'text-amber-400 fill-amber-100/50'}`} />
+                            <Folder className={`w-12 h-12 text-amber-600 fill-amber-200/80`} />
                             <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
                               {item.itemCount}
                             </span>
@@ -523,7 +538,7 @@ export default function CustomerDocumentsExplorer() {
                           </div>
                         ) : (
                           <div className="relative">
-                            <FileText className="w-12 h-12 text-[#2563eb] fill-blue-50" />
+                            <FileText className="w-12 h-12 text-blue-600 fill-white" />
                           </div>
                         )}
                         <span className="text-[11px] font-medium text-gray-700 mt-2 truncate w-full" title={item.name}>
@@ -574,7 +589,7 @@ export default function CustomerDocumentsExplorer() {
                         return (
                           <tr
                             key={item.id}
-                            onClick={() => setSelectedItem(item)}
+                            onClick={() => selectItem(item)}
                             onDoubleClick={() => handleItemDoubleClick(item)}
                             className={`cursor-pointer ${
                               isSelected ? 'bg-blue-50 font-semibold' : 'hover:bg-gray-50/50'
@@ -582,11 +597,11 @@ export default function CustomerDocumentsExplorer() {
                           >
                             <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
                               {isFolder ? (
-                                <Folder className={`w-3.5 h-3.5 shrink-0 ${item.type === 'request' ? 'text-blue-500' : 'text-amber-500'}`} />
+                                <Folder className={`w-3.5 h-3.5 shrink-0 text-amber-600 fill-amber-200/80`} />
                               ) : item.type === 'result' ? (
                                 <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
                               ) : (
-                                <File className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                <File className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
                               )}
                               <span className="truncate">{item.name}</span>
                             </td>
@@ -610,14 +625,14 @@ export default function CustomerDocumentsExplorer() {
         </div>
 
         {/* Right Details Explorer Sidebar Panel */}
-        <div className={`w-72 bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300 ${selectedItem ? 'opacity-100 translate-x-0' : 'lg:opacity-90 lg:block hidden bg-gray-50/30'}`}>
+        <div className={`${panelOpen ? 'w-72' : 'w-0 overflow-hidden'} bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto shrink-0 flex flex-col gap-4 relative transition-all duration-300`}>
           {selectedItem ? (
             <>
               {/* Sidebar Header Title */}
               <div className="flex items-start justify-between">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">File Properties</span>
                 <button
-                  onClick={() => setSelectedItem(null)}
+                  onClick={() => { setSelectedItem(null); setPanelOpen(false); }}
                   className="p-0.5 text-gray-400 hover:bg-[#e5e7eb] rounded-full"
                 >
                   <X className="w-4 h-4" />
@@ -627,11 +642,11 @@ export default function CustomerDocumentsExplorer() {
               {/* Large Preview Graphic */}
               <div className="p-8 bg-white border border-[#e5e7eb] rounded-lg flex items-center justify-center shadow-xs">
                 {selectedItem.type === 'dept' || selectedItem.type === 'request' ? (
-                  <Folder className={`w-12 h-12 ${selectedItem.type === 'request' ? 'text-blue-500' : 'text-amber-500'}`} />
+                  <Folder className={`w-12 h-12 text-amber-600 fill-amber-200/80`} />
                 ) : selectedItem.type === 'result' ? (
                   <CheckCircle className="w-12 h-12 text-green-500" />
                 ) : (
-                  <FileText className="w-12 h-12 text-blue-500" />
+                  <FileText className="w-12 h-12 text-blue-600 fill-white" />
                 )}
               </div>
 
