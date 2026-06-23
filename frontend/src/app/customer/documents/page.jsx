@@ -94,16 +94,6 @@ export default function CustomerDocumentsExplorer() {
     };
   }, []);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') { e.preventDefault(); handleUp(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowLeft') { e.preventDefault(); handleBack(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowRight') { e.preventDefault(); handleForward(); }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [handleUp, handleBack, handleForward]);
-
   const handleResizeStart = (e) => {
     e.preventDefault();
     isResizing.current = true;
@@ -254,6 +244,16 @@ export default function CustomerDocumentsExplorer() {
       navigateToPath(currentPath.slice(0, -1));
     }
   }, [currentPath, navigateToPath]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') { e.preventDefault(); handleUp(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowLeft') { e.preventDefault(); handleBack(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowRight') { e.preventDefault(); handleForward(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleUp, handleBack, handleForward]);
 
   const handleHeaderClick = (field) => {
     if (sortField === field) {

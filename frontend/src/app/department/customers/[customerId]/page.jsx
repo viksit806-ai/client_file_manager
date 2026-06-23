@@ -119,46 +119,6 @@ export default function DeptCustomerDocsExplorer() {
       }
     };
   }, [selectedItem]);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.key === 'Delete' && selectedItem && canDelete) {
-        e.preventDefault();
-        handleDeleteClick();
-      }
-      if (e.key === 'F2' && selectedItem && canRename) {
-        e.preventDefault();
-        setIsRenaming(true);
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'n' && canCreate) {
-        e.preventDefault();
-        setShowCreateFolder(true);
-        setNewFolderName('');
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'e' && canCreate) {
-        e.preventDefault();
-        setShowUploadFilesPanel(true);
-        setUploadFilesList([]);
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') { e.preventDefault(); handleUp(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowLeft') { e.preventDefault(); handleBack(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowRight') { e.preventDefault(); handleForward(); }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [selectedItem, canDelete, canRename, canCreate, handleUp, handleBack, handleForward]);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (uploadFilesList.length > 0 || isRenaming || newFolderName.trim() !== '') {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [uploadFilesList, isRenaming, newFolderName]);
-
   useEffect(() => {
     const name = docs[0]?.customerId?.name;
     if (customerId && name) {
@@ -566,6 +526,45 @@ export default function DeptCustomerDocsExplorer() {
       setUploadingFiles(false);
     }
   };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Delete' && selectedItem && canDelete) {
+        e.preventDefault();
+        handleDeleteClick();
+      }
+      if (e.key === 'F2' && selectedItem && canRename) {
+        e.preventDefault();
+        setIsRenaming(true);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n' && canCreate) {
+        e.preventDefault();
+        setShowCreateFolder(true);
+        setNewFolderName('');
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'e' && canCreate) {
+        e.preventDefault();
+        setShowUploadFilesPanel(true);
+        setUploadFilesList([]);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') { e.preventDefault(); handleUp(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowLeft') { e.preventDefault(); handleBack(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowRight') { e.preventDefault(); handleForward(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedItem, canDelete, canRename, canCreate, handleUp, handleBack, handleForward]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (uploadFilesList.length > 0 || isRenaming || newFolderName.trim() !== '') {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [uploadFilesList, isRenaming, newFolderName]);
 
   if (loading && docs.length === 0) return <div className="animate-pulse h-64 bg-gray-200 rounded-lg" />;
 
