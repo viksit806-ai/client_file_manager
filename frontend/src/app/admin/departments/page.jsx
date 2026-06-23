@@ -106,7 +106,7 @@ export default function DepartmentsPage() {
                 <button onClick={() => handleDelete(dept._id)} className="p-1.5 hover:bg-red-100 rounded text-red-600"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
-            <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-6 text-sm flex-wrap">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={dept.permissions?.blockDocuments} onChange={(e) => togglePermission(dept._id, 'blockDocuments', e.target.checked)} className="rounded" />
                 Can Block Documents

@@ -191,7 +191,7 @@ export default function DeptCustomersExplorer() {
       <div className="flex flex-row flex-1 overflow-hidden">
 
         {/* Left Sidebar Tree */}
-        <div className="w-52 bg-white border-r border-[#e5e7eb] h-full overflow-y-auto shrink-0 flex flex-col p-2 text-xs text-gray-700">
+        <div className="w-52 bg-white border-r border-[#e5e7eb] h-full overflow-y-auto shrink-0 hidden md:flex flex-col p-2 text-xs text-gray-700">
           <div className="mb-3 border-b pb-2">
             <span className="font-semibold text-gray-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Navigation</span>
             <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none">
