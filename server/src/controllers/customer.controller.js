@@ -230,5 +230,5 @@ export const downloadDocument = async (req, res) => {
   if (!exists) throw new AppError('File not found on storage', 404);
 
   const fileName = type === 'result' && doc.resultFile ? doc.resultFile.originalName : doc.originalName;
-  res.download(filePath, fileName);
+  res.download(exists, fileName);
 };

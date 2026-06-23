@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import env from '../config/env.js';
 import User from '../models/User.model.js';
 
@@ -54,10 +55,20 @@ class StorageService {
   }
 
   getFilePath(storedPath) {
-    if (!fs.existsSync(storedPath)) {
-      return null;
+    if (!storedPath) return null;
+    const normalizedPath = storedPath.replace(/[\\/]/g, path.sep);
+    if (path.isAbsolute(normalizedPath) && fs.existsSync(normalizedPath)) {
+      return normalizedPath;
     }
-    return storedPath;
+    if (fs.existsSync(normalizedPath)) {
+      return path.resolve(normalizedPath);
+    }
+    const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+    const resolvedPath = path.resolve(serverDir, normalizedPath);
+    if (fs.existsSync(resolvedPath)) {
+      return resolvedPath;
+    }
+    return null;
   }
 
   deleteFile(storedPath) {

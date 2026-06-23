@@ -472,7 +472,7 @@ export const downloadFile = async (req, res) => {
   const exists = storageService.getFilePath(filePath);
   if (!exists) throw new AppError('File not found on storage', 404);
 
-  res.download(filePath, fileName);
+  res.download(exists, fileName);
 };
 
 export const departmentPurgeDocumentFiles = async (req, res) => {
