@@ -5,6 +5,7 @@ import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import SlaBadge from '@/components/ui/SlaBadge';
 import { formatDateTime, getSlaStatus } from '@/lib/utils';
+import { FileText, Clock, RefreshCw, CheckCircle, Ban, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
@@ -31,20 +32,20 @@ export default function DeptDashboard() {
       <h1 className="text-2xl font-bold mb-6">Dashboard — {user?.departmentId?.name || 'Department'}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <StatCard title="Total Documents" value={data?.totalDocs || 0} icon="📄" color="blue" />
-        <StatCard title="Pending" value={data?.pending || 0} icon="⏳" color="yellow" />
-        <StatCard title="Processing" value={data?.processing || 0} icon="🔄" color="purple" />
-        <StatCard title="Completed" value={data?.completed || 0} icon="✅" color="green" />
-        <StatCard title="Blocked" value={data?.blocked || 0} icon="⛔" color="red" />
+        <StatCard title="Total Documents" value={data?.totalDocs || 0} icon={FileText} color="blue" />
+        <StatCard title="Pending" value={data?.pending || 0} icon={Clock} color="yellow" />
+        <StatCard title="Processing" value={data?.processing || 0} icon={RefreshCw} color="purple" />
+        <StatCard title="Completed" value={data?.completed || 0} icon={CheckCircle} color="green" />
+        <StatCard title="Blocked" value={data?.blocked || 0} icon={Ban} color="red" />
       </div>
 
       <h2 className="text-lg font-semibold mb-4">SLA Compliance (48hr Fulfillment)</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <StatCard title="Active — Overdue" value={data?.slaOverdue || 0} icon="🔴" color="red" />
-        <StatCard title="Active — At Risk" value={data?.slaApproaching || 0} icon="🟡" color="yellow" />
-        <StatCard title="Active — Within SLA" value={data?.slaWithin || 0} icon="🟢" color="green" />
-        <StatCard title="Fulfilled on Time" value={data?.slaMet || 0} icon="✅" color="blue" />
-        <StatCard title="SLA Compliance" value={totalCompleted > 0 ? `${slaCompliance}%` : '—'} icon="📊" color={slaCompliance >= 80 ? 'green' : slaCompliance >= 50 ? 'yellow' : 'red'} />
+        <StatCard title="Active — Overdue" value={data?.slaOverdue || 0} icon={AlertCircle} color="red" />
+        <StatCard title="Active — At Risk" value={data?.slaApproaching || 0} icon={AlertTriangle} color="yellow" />
+        <StatCard title="Active — Within SLA" value={data?.slaWithin || 0} icon={CheckCircle} color="green" />
+        <StatCard title="Fulfilled on Time" value={data?.slaMet || 0} icon={CheckCircle} color="blue" />
+        <StatCard title="SLA Compliance" value={totalCompleted > 0 ? `${slaCompliance}%` : '—'} icon={null} color={slaCompliance >= 80 ? 'green' : slaCompliance >= 50 ? 'yellow' : 'red'} />
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">

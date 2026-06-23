@@ -29,12 +29,12 @@ export const getStatusColor = (status) => {
 };
 
 export const getFileIcon = (mimeType) => {
-  if (mimeType?.includes('pdf')) return '📄';
-  if (mimeType?.includes('image')) return '🖼️';
-  if (mimeType?.includes('word') || mimeType?.includes('document')) return '📝';
-  if (mimeType?.includes('excel') || mimeType?.includes('sheet')) return '📊';
-  if (mimeType?.includes('text')) return '📃';
-  return '📁';
+  if (mimeType?.includes('pdf')) return 'FileText';
+  if (mimeType?.includes('image')) return 'Image';
+  if (mimeType?.includes('word') || mimeType?.includes('document')) return 'FileText';
+  if (mimeType?.includes('excel') || mimeType?.includes('sheet')) return 'FileSpreadsheet';
+  if (mimeType?.includes('text')) return 'FileText';
+  return 'Folder';
 };
 
 export const formatFileSize = (bytes) => {

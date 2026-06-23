@@ -1,5 +1,6 @@
 'use client';
-export default function StatCard({ title, value, icon, color = 'blue' }) {
+
+export default function StatCard({ title, value, icon: Icon, color = 'blue' }) {
   const colors = {
     blue: 'bg-blue-50 border-blue-200 text-blue-700',
     green: 'bg-green-50 border-green-200 text-green-700',
@@ -15,7 +16,7 @@ export default function StatCard({ title, value, icon, color = 'blue' }) {
           <p className="text-sm font-medium opacity-80">{title}</p>
           <p className="text-2xl font-bold mt-1">{value}</p>
         </div>
-        {icon && <span className="text-2xl opacity-70">{icon}</span>}
+        {Icon && <Icon size={28} className="opacity-70 shrink-0" strokeWidth={1.5} />}
       </div>
     </div>
   );

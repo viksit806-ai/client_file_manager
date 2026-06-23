@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import {
-  LayoutDashboard, Users, Building2, UserCog, FolderTree, FileText, LogOut, ChevronLeft, Menu,
+  LayoutDashboard, Users, Building2, UserCog, FolderTree, FileText, LogOut, ChevronLeft, Menu, X,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,12 +21,28 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'super_admin')) {
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarOpen(false);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const closeSidebar = () => {
+    if (isMobile) setSidebarOpen(false);
+  };
 
   if (loading || !user) {
     return (
@@ -38,10 +54,23 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen flex">
-      <aside className={`bg-gray-900 text-white flex flex-col transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'}`}>
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside
+        className={`
+          bg-gray-900 text-white flex flex-col transition-all duration-300 shrink-0 z-40
+          ${isMobile
+            ? `fixed inset-y-0 left-0 ${sidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full'}`
+            : `${sidebarOpen ? 'w-64' : 'w-16'} relative`}
+        `}
+      >
         <div className="h-16 flex items-center px-4 border-b border-gray-700">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 hover:bg-gray-700 rounded-lg">
-            {sidebarOpen ? <ChevronLeft className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {sidebarOpen ? (isMobile ? <X className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />) : <Menu className="w-5 h-5" />}
           </button>
           {sidebarOpen && <span className="ml-3 font-semibold text-sm">CA Portal Admin</span>}
         </div>
@@ -53,6 +82,7 @@ export default function AdminLayout({ children }) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={closeSidebar}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
               >
                 <item.icon className="w-5 h-5 shrink-0" />
@@ -81,8 +111,8 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">{children}</div>
+      <main className="flex-1 overflow-auto min-w-0">
+        <div className="p-4 sm:p-6">{children}</div>
       </main>
     </div>
   );

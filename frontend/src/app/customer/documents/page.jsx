@@ -4,7 +4,7 @@ import { customerAPI } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import SlaBadge from '@/components/ui/SlaBadge';
 import Modal from '@/components/ui/Modal';
-import { formatDateTime, getFileIcon, formatFileSize, getSlaStatus } from '@/lib/utils';
+import { formatDateTime, formatFileSize, getSlaStatus } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import {

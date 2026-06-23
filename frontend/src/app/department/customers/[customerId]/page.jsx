@@ -5,7 +5,7 @@ import { departmentAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import StatusBadge from '@/components/ui/StatusBadge';
 import SlaBadge from '@/components/ui/SlaBadge';
-import { formatDateTime, getFileIcon, formatFileSize, getSlaStatus } from '@/lib/utils';
+import { formatDateTime, formatFileSize, getSlaStatus } from '@/lib/utils';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -25,6 +25,7 @@ import {
   CheckCircle,
   Upload,
   AlertCircle,
+  AlertTriangle,
   Monitor,
   HardDrive,
   Search,
@@ -1215,7 +1216,7 @@ export default function DeptCustomerDocsExplorer() {
                     {selectedItem.type === 'request' ? (
                       selectedItem.docs?.every(d => d.fileDeletedFromStorage) ? (
                         <div className="p-2 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[9px] font-medium">
-                          ⚠️ Files in this request have already been purged.
+                          <AlertTriangle size={12} className="inline mr-1" /> Files in this request have already been purged.
                         </div>
                       ) : (
                         <button
@@ -1228,7 +1229,7 @@ export default function DeptCustomerDocsExplorer() {
                     ) : (
                       (selectedItem.type === 'submission' && selectedItem.doc.fileDeletedFromStorage) || (selectedItem.type === 'result' && selectedItem.doc.resultFileDeletedFromStorage) ? (
                         <div className="p-2 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[9px] font-medium">
-                          ⚠️ Physical file purged from disk.
+                          <AlertTriangle size={12} className="inline mr-1" /> Physical file purged from disk.
                         </div>
                       ) : (
                         <button

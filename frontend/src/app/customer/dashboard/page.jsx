@@ -4,6 +4,7 @@ import { customerAPI } from '@/lib/api';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { formatDateTime } from '@/lib/utils';
+import { Clock, RefreshCw, CheckCircle, Ban, Upload, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CustomerDashboard() {
@@ -29,20 +30,26 @@ export default function CustomerDashboard() {
       <h1 className="text-2xl font-bold mb-6">My Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Pending" value={pending} icon="⏳" color="yellow" />
-        <StatCard title="Processing" value={processing} icon="🔄" color="purple" />
-        <StatCard title="Completed" value={completed} icon="✅" color="green" />
-        <StatCard title="Blocked" value={blocked} icon="⛔" color="red" />
+        <StatCard title="Pending" value={pending} icon={Clock} color="yellow" />
+        <StatCard title="Processing" value={processing} icon={RefreshCw} color="purple" />
+        <StatCard title="Completed" value={completed} icon={CheckCircle} color="green" />
+        <StatCard title="Blocked" value={blocked} icon={Ban} color="red" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <Link href="/customer/upload" className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition">
-          <h2 className="text-lg font-semibold">📤 Upload Documents</h2>
-          <p className="text-sm opacity-80 mt-1">Submit your documents to any department</p>
+        <Link href="/customer/upload" className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition flex items-center gap-3">
+          <Upload size={24} className="shrink-0" />
+          <div>
+            <h2 className="text-lg font-semibold">Upload Documents</h2>
+            <p className="text-sm opacity-80 mt-0.5">Submit your documents to any department</p>
+          </div>
         </Link>
-        <Link href="/customer/documents" className="bg-gray-800 text-white rounded-lg p-6 hover:bg-gray-700 transition">
-          <h2 className="text-lg font-semibold">📄 My Documents</h2>
-          <p className="text-sm opacity-80 mt-1">View status and download processed files</p>
+        <Link href="/customer/documents" className="bg-gray-800 text-white rounded-lg p-6 hover:bg-gray-700 transition flex items-center gap-3">
+          <FileText size={24} className="shrink-0" />
+          <div>
+            <h2 className="text-lg font-semibold">My Documents</h2>
+            <p className="text-sm opacity-80 mt-0.5">View status and download processed files</p>
+          </div>
         </Link>
       </div>
 

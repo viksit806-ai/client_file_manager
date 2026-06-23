@@ -5,6 +5,7 @@ import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import SlaBadge from '@/components/ui/SlaBadge';
 import { formatDateTime, getSlaStatus } from '@/lib/utils';
+import { Users, Building2, UserCircle, FileText, Clipboard, AlertCircle, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
@@ -30,17 +31,17 @@ export default function AdminDashboard() {
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Total Customers" value={data.totalCustomers} icon="👥" color="blue" />
-        <StatCard title="Departments" value={data.totalDepartments} icon="🏢" color="purple" />
-        <StatCard title="Dept Users" value={data.totalDeptUsers} icon="👤" color="green" />
-        <StatCard title="Total Documents" value={data.totalDocuments} icon="📄" color="yellow" />
+        <StatCard title="Total Customers" value={data.totalCustomers} icon={Users} color="blue" />
+        <StatCard title="Departments" value={data.totalDepartments} icon={Building2} color="purple" />
+        <StatCard title="Dept Users" value={data.totalDeptUsers} icon={UserCircle} color="green" />
+        <StatCard title="Total Documents" value={data.totalDocuments} icon={FileText} color="yellow" />
       </div>
 
       <h2 className="text-lg font-semibold mb-4">SLA Overview (48hr Fulfillment)</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard title="Total Active Requests" value={totalSla} icon="📋" color="blue" />
-        <StatCard title="Overdue" value={totalOverdue} icon="🔴" color="red" />
-        <StatCard title="Approaching Deadline" value={totalApproaching} icon="🟡" color="yellow" />
+        <StatCard title="Total Active Requests" value={totalSla} icon={Clipboard} color="blue" />
+        <StatCard title="Overdue" value={totalOverdue} icon={AlertCircle} color="red" />
+        <StatCard title="Approaching Deadline" value={totalApproaching} icon={AlertTriangle} color="yellow" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
