@@ -193,7 +193,7 @@ export default function CustomerUploadPage() {
           </div>
 
           {files.length > 0 && (
-            <div className="space-y-2 border p-3 rounded-lg bg-gray-50">
+            <div className="space-y-2 border p-3 rounded-lg bg-white">
               <p className="text-xs font-semibold text-gray-500 uppercase">Selected Files ({files.length}/10)</p>
               <div className="divide-y divide-gray-200 max-h-48 overflow-y-auto">
                 {files.map((f, idx) => (

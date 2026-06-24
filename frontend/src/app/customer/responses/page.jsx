@@ -48,7 +48,7 @@ export default function CustomerResponsesPage() {
     }
   };
 
-  if (loading) return <div className="animate-pulse space-y-3">{[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-gray-100 rounded-lg" />)}</div>;
+  if (loading) return <div className="animate-pulse space-y-3">{[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-blue-50 rounded-lg" />)}</div>;
 
   return (
     <div>
@@ -105,7 +105,7 @@ export default function CustomerResponsesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider">
+                <tr className="border-b bg-blue-50 text-blue-900 uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-4 font-semibold">Document</th>
                   <th className="py-3 px-4 font-semibold">File Category</th>
                   <th className="py-3 px-4 font-semibold">Department</th>
@@ -116,7 +116,7 @@ export default function CustomerResponsesPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filtered.map(doc => (
-                  <tr key={doc._id} className="hover:bg-gray-50 transition">
+                  <tr key={doc._id} className="hover:bg-blue-50/50 transition">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-green-500 shrink-0" />

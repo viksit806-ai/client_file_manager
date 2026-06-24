@@ -54,7 +54,7 @@ export default function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-1.5 rounded-lg hover:bg-gray-100 transition"
+        className="relative p-1.5 rounded-lg hover:bg-blue-50 transition"
         title="Notifications"
       >
         <Bell className="w-5 h-5 text-gray-600" />
@@ -86,7 +86,7 @@ export default function NotificationBell() {
               notifications.map(n => {
                 const Icon = typeIcons[n.type] || Bell;
                 return (
-                  <div key={n._id} className="group flex items-start gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                  <div key={n._id} className="group flex items-start gap-3 px-4 py-3 hover:bg-blue-50/50 border-b border-gray-100 last:border-0">
                     <div className={`p-1.5 rounded-full shrink-0 ${n.type === 'new_request' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
                       <Icon className="w-3.5 h-3.5" />
                     </div>

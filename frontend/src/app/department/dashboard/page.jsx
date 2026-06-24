@@ -57,7 +57,7 @@ export default function DeptDashboard() {
               return (
                 <div
                   key={doc._id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-blue-50/50 cursor-pointer"
                   onClick={() => router.push(`/department/documents/${doc._id}`)}
                 >
                   <div className="min-w-0 flex-1">

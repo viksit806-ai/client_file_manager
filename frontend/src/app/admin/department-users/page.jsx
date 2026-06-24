@@ -138,7 +138,7 @@ export default function DepartmentUsersPage() {
 
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-blue-50 text-blue-900 border-b border-gray-100">
             <tr>
               <th className="text-left px-4 py-3 font-medium">Name</th>
               <th className="text-left px-4 py-3 font-medium">Email</th>
@@ -154,7 +154,7 @@ export default function DepartmentUsersPage() {
             ) : users.length === 0 ? (
               <tr><td colSpan={6}><div className="flex flex-col items-center py-12 text-gray-400"><UserCog className="w-12 h-12 mb-3 text-gray-300" /><p className="text-sm font-medium">No users yet</p><p className="text-xs mt-1">Click "Add User" to get started</p></div></td></tr>
             ) : users.map((u) => (
-              <tr key={u._id} className="hover:bg-gray-50">
+              <tr key={u._id} className="hover:bg-blue-50/50">
                 <td className="px-4 py-3 font-medium">{u.name}</td>
                 <td className="px-4 py-3 text-gray-600">{u.email}</td>
                 <td className="px-4 py-3 text-gray-600">{u.departmentId?.name || '-'}</td>
@@ -166,8 +166,8 @@ export default function DepartmentUsersPage() {
                 <td className="px-4 py-3 text-gray-500">{formatDate(u.createdAt)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => openEdit(u)} className="p-1.5 hover:bg-gray-100 rounded" title="Edit"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => handleResetPassword(u._id)} className="p-1.5 hover:bg-gray-100 rounded" title="Reset Password">
+                    <button onClick={() => openEdit(u)} className="p-1.5 hover:bg-blue-50 rounded" title="Edit"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => handleResetPassword(u._id)} className="p-1.5 hover:bg-blue-50 rounded" title="Reset Password">
                       <RefreshCw className="w-4 h-4" />
                     </button>
                     <button onClick={() => handleDelete(u._id)} className="p-1.5 hover:bg-red-100 rounded text-red-600"><Trash2 className="w-4 h-4" /></button>

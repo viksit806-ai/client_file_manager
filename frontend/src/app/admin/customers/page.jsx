@@ -144,7 +144,7 @@ export default function CustomersPage() {
 
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-blue-50 text-blue-900 border-b border-gray-100">
             <tr>
               <th className="text-left px-4 py-3 font-medium">Name</th>
               <th className="text-left px-4 py-3 font-medium">Email</th>
@@ -159,7 +159,7 @@ export default function CustomersPage() {
             ) : filtered.length === 0 ? (
               <tr><td colSpan={5}><div className="flex flex-col items-center py-12 text-gray-400"><Users className="w-12 h-12 mb-3 text-gray-300" /><p className="text-sm font-medium">No customers yet</p><p className="text-xs mt-1">Click "Add Customer" to get started</p></div></td></tr>
             ) : filtered.map((c) => (
-              <tr key={c._id} className="hover:bg-gray-50">
+              <tr key={c._id} className="hover:bg-blue-50/50">
                 <td className="px-4 py-3 font-medium">{c.name}</td>
                 <td className="px-4 py-3 text-gray-600">{c.email}</td>
                 <td className="px-4 py-3 text-center">
@@ -170,13 +170,13 @@ export default function CustomersPage() {
                 <td className="px-4 py-3 text-gray-500">{formatDate(c.createdAt)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => router.push(`/admin/customers/${c._id}`)} className="p-1.5 hover:bg-gray-100 rounded" title="View Documents">
+                    <button onClick={() => router.push(`/admin/customers/${c._id}`)} className="p-1.5 hover:bg-blue-50 rounded" title="View Documents">
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button onClick={() => openEdit(c)} className="p-1.5 hover:bg-gray-100 rounded" title="Edit">
+                    <button onClick={() => openEdit(c)} className="p-1.5 hover:bg-blue-50 rounded" title="Edit">
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleResetPassword(c._id)} className="p-1.5 hover:bg-gray-100 rounded" title="Reset Password">
+                    <button onClick={() => handleResetPassword(c._id)} className="p-1.5 hover:bg-blue-50 rounded" title="Reset Password">
                       <RefreshCw className="w-4 h-4" />
                     </button>
                     <button onClick={() => handleDelete(c._id)} className="p-1.5 hover:bg-red-100 rounded text-red-600" title="Delete">

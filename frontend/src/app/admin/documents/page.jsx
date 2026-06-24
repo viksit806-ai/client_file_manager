@@ -605,12 +605,12 @@ export default function AdminDocumentsExplorer() {
     setSelectedItem(folderItem);
   };
 
-  const panelClassName = 'bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
+  const panelClassName = 'bg-white border-l border-[#e5e7eb] h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
     ? 'fixed inset-y-0 right-0 z-50 w-[85vw] max-w-sm shadow-xl transition-transform duration-300 ' + (selectedItem ? 'translate-x-0' : 'translate-x-full')
-    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-gray-50/30'));
+    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-white'));
 
   return (
-    <div className="flex flex-col -m-6 h-screen bg-[#f3f4f6] select-none overflow-hidden">
+    <div className="flex flex-col -m-6 h-screen bg-white select-none overflow-hidden">
         
         {/* Top Address & Action Bar */}
         <div className="h-12 bg-white border-b border-[#e5e7eb] flex items-center px-3 justify-between gap-3 shrink-0">
@@ -620,7 +620,7 @@ export default function AdminDocumentsExplorer() {
             <button
               onClick={handleBack}
               disabled={historyIndex === 0}
-              className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
               title="Back"
             >
               <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
@@ -628,7 +628,7 @@ export default function AdminDocumentsExplorer() {
             <button
               onClick={handleForward}
               disabled={historyIndex === history.length - 1}
-              className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
               title="Forward"
             >
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -636,7 +636,7 @@ export default function AdminDocumentsExplorer() {
             <button
               onClick={handleUp}
               disabled={currentPath.length === 0}
-              className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
               title="Up to Parent Folder"
             >
               <ArrowUp className="w-4 h-4 stroke-[2.5]" />
@@ -644,7 +644,7 @@ export default function AdminDocumentsExplorer() {
           </div>
 
           {/* Address Bar Breadcrumbs */}
-          <div className="flex-1 max-w-2xl bg-[#f9fafb] border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-gray-600 gap-1 scrollbar-none font-medium">
+          <div className="flex-1 max-w-2xl bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-gray-600 gap-1 scrollbar-none font-medium">
             <HardDrive className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <span className="text-gray-400 font-bold">This PC</span>
             <ChevronRight className="w-3 h-3 text-gray-300" />
@@ -669,7 +669,7 @@ export default function AdminDocumentsExplorer() {
           </div>
 
           {/* Search Bar Input */}
-          <div className="relative w-48 bg-[#f9fafb] border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 shrink-0">
+          <div className="relative w-48 bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 shrink-0">
             <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <input
               type="text"
@@ -686,7 +686,7 @@ export default function AdminDocumentsExplorer() {
           </div>
 
           {/* Sort Controls */}
-          <div className="flex items-center gap-1 border rounded bg-[#f3f4f6] p-0.5 shrink-0 text-xs text-gray-700">
+          <div className="flex items-center gap-1 border rounded bg-white p-0.5 shrink-0 text-xs text-gray-700">
             <span className="px-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sort:</span>
             <select
               value={sortField}
@@ -701,7 +701,7 @@ export default function AdminDocumentsExplorer() {
             </select>
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="p-1 bg-white hover:bg-gray-100 rounded text-gray-600 font-bold text-[10px] w-6 text-center"
+              className="p-1 bg-white hover:bg-blue-50 rounded text-gray-600 font-bold text-[10px] w-6 text-center"
               title={sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
             >
               {sortOrder === 'asc' ? '▲' : '▼'}
@@ -710,7 +710,7 @@ export default function AdminDocumentsExplorer() {
 
           {/* Layout Mode Toggles */}
           {!isSearchOrFilterActive && (
-            <div className="flex border rounded bg-[#f3f4f6] p-0.5 shrink-0">
+            <div className="flex border rounded bg-white p-0.5 shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1 rounded ${viewMode === 'grid' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -736,7 +736,7 @@ export default function AdminDocumentsExplorer() {
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="px-2 py-1 border rounded text-[11px] outline-none bg-[#f9fafb] focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1 border rounded text-[11px] outline-none bg-white focus:ring-1 focus:ring-blue-500"
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
@@ -749,7 +749,7 @@ export default function AdminDocumentsExplorer() {
             <select
               value={filters.departmentId}
               onChange={(e) => setFilters({ ...filters, departmentId: e.target.value })}
-              className="px-2 py-1 border rounded text-[11px] outline-none bg-[#f9fafb] focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1 border rounded text-[11px] outline-none bg-white focus:ring-1 focus:ring-blue-500"
             >
               <option value="">All Departments</option>
               {departments.map(d => (
@@ -810,7 +810,7 @@ export default function AdminDocumentsExplorer() {
           </div>
 
           {/* Center Files Pane */}
-          <div className="flex-1 bg-white h-full overflow-y-auto p-4 flex flex-col">
+          <div className="flex-1 bg-white h-full p-4 flex flex-col overflow-hidden">
 
             {/* Create Folder / Upload File action toolbar – visible for admin at appropriate depth */}
             {!isSearchOrFilterActive && (
@@ -896,7 +896,7 @@ export default function AdminDocumentsExplorer() {
             {isSearchOrFilterActive ? (
 
               /* Flat search results list */
-              <div className="space-y-2 flex-1">
+              <div className="space-y-2 flex-1 overflow-y-auto">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Search Results ({searchedDocs.length} matches)</span>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
@@ -928,7 +928,7 @@ export default function AdminDocumentsExplorer() {
                           <tr
                             key={doc._id}
                             onClick={() => handleSelectItem({ id: doc._id, name: doc.title || doc.originalName, type: 'file', doc })}
-                            className={`cursor-pointer ${selectedItem?.id === doc._id ? 'bg-blue-50 font-medium' : 'hover:bg-gray-50/50'}`}
+                            className={`cursor-pointer ${selectedItem?.id === doc._id ? 'bg-blue-50 font-medium' : 'hover:bg-blue-50/50'}`}
                           >
                             <td className="py-2.5 px-2 flex items-center gap-2 max-w-xs">
                               <FileText className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
@@ -949,166 +949,168 @@ export default function AdminDocumentsExplorer() {
               </div>
             ) : (
               /* Folder navigation */
-              <div className="flex-1">
-                {explorerItems.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-2">
-                    <Folder className="w-12 h-12 text-amber-300 fill-amber-100/50" />
-                    <p className="text-sm font-medium">No items</p>
-                    <p className="text-xs mt-1">Navigate to a request folder and upload files, or create a new folder</p>
-                  </div>
-                ) : viewMode === 'grid' ? (
-                  /* Grid view */
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {[...explorerItems].sort((a, b) => {
-                      const aFolder = ['customer', 'dept', 'request'].includes(a.type);
-                      const bFolder = ['customer', 'dept', 'request'].includes(b.type);
-                      if (aFolder && !bFolder) return -1;
-                      if (!aFolder && bFolder) return 1;
-                      let comp = 0;
-                      if (sortField === 'name') {
-                        comp = a.name.localeCompare(b.name);
-                      } else if (sortField === 'type') {
-                        comp = a.type.localeCompare(b.type);
-                      } else if (sortField === 'size') {
-                        comp = (a.fileSize || 0) - (b.fileSize || 0);
-                      } else if (sortField === 'status') {
-                        comp = (a.status || '').localeCompare(b.status || '');
-                      } else if (sortField === 'date') {
-                        comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-                      }
-                      return sortOrder === 'asc' ? comp : -comp;
-                    }).map((item) => {
-                      const isSelected = selectedItem?.id === item.id;
-                      const isFolder = item.type !== 'file' && item.type !== 'result_file';
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => handleSelectItem(item)}
-                          onDoubleClick={() => handleItemDoubleClick(item)}
-                          className={`flex flex-col items-center text-center p-3 border rounded-lg cursor-pointer transition select-none ${
-                            isSelected
-                              ? 'bg-blue-50/80 border-[#93c5fd] shadow-sm'
-                              : 'border-transparent hover:bg-gray-50 hover:border-gray-200'
-                          }`}
-                        >
-                          {isFolder ? (
-                            <div className="relative">
-                              <Folder
-                                title={`${item.name} — ${item.type} (${item.itemCount} items)`}
-                                className={`w-12 h-12 ${
-                                  item.type === 'customer'
-                                    ? 'text-amber-600 fill-amber-200/80'
-                                    : item.type === 'dept'
-                                    ? 'text-amber-600 fill-amber-200/80'
-                                    : 'text-amber-600 fill-amber-200/80'
-                                }`}
-                              />
-                              <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
-                                {item.itemCount}
-                              </span>
-                            </div>
-                          ) : item.type === 'result_file' ? (
-                            <div className="relative">
-                              <FileText title={`${item.name} — Result File (${formatFileSize(item.fileSize)})`} className="w-12 h-12 text-green-500 fill-green-50" />
-                              <CheckCircle className="w-3.5 h-3.5 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
-                            </div>
-                          ) : (
-                            <div className="relative">
-                              <FileText title={`${item.name} — ${item.status} (${formatFileSize(item.fileSize)})`} className="w-12 h-12 text-blue-600 fill-white" />
-                              {item.doc?.resultFile && (
-                                <CheckCircle className="w-3 h-3 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
-                              )}
-                            </div>
-                          )}
-                          <span className="text-[11px] font-medium text-gray-700 mt-2 truncate w-full" title={item.name}>
-                            {item.name}
-                          </span>
-                          <div className="mt-1 flex flex-col items-center gap-0.5">
-                            {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
-                            {item.status && <StatusBadge status={item.status} />}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  /* Details list view */
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left border-collapse">
-                      <thead>
-                        <tr className="border-b border-[#e5e7eb] font-semibold text-gray-400 uppercase tracking-wider cursor-pointer">
-                          <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('name')}>Name {sortField === 'name' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                          <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('type')}>Type {sortField === 'type' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                          <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('size')}>Size {sortField === 'size' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                          <th className="py-2.5 px-3 text-center hover:text-blue-600" onClick={() => handleHeaderClick('status')}>Status {sortField === 'status' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#e5e7eb]">
-                        {[...explorerItems].sort((a, b) => {
-                          const aFolder = ['customer', 'dept', 'request'].includes(a.type);
-                          const bFolder = ['customer', 'dept', 'request'].includes(b.type);
-                          if (aFolder && !bFolder) return -1;
-                          if (!aFolder && bFolder) return 1;
-                          let comp = 0;
-                          if (sortField === 'name') {
-                            comp = a.name.localeCompare(b.name);
-                          } else if (sortField === 'type') {
-                            comp = a.type.localeCompare(b.type);
-                          } else if (sortField === 'size') {
-                            comp = (a.fileSize || 0) - (b.fileSize || 0);
-                          } else if (sortField === 'status') {
-                            comp = (a.status || '').localeCompare(b.status || '');
-                          } else if (sortField === 'date') {
-                            comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-                          }
-                          return sortOrder === 'asc' ? comp : -comp;
-                        }).map((item) => {
-                          const isSelected = selectedItem?.id === item.id;
-                          const isFolder = item.type !== 'file' && item.type !== 'result_file';
-                          return (
-                            <tr
-                              key={item.id}
-                              onClick={() => handleSelectItem(item)}
-                              onDoubleClick={() => handleItemDoubleClick(item)}
-                              className={`cursor-pointer ${
-                                isSelected ? 'bg-blue-50 font-semibold' : 'hover:bg-gray-50/50'
-                              }`}
-                            >
-                              <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
-                                {isFolder ? (
-                                  <Folder
-                                    className={`w-3.5 h-3.5 shrink-0 ${
-                                      item.type === 'customer'
-                                        ? 'text-amber-600 fill-amber-200/80'
-                                        : item.type === 'dept'
-                                        ? 'text-amber-600 fill-amber-200/80'
-                                        : 'text-amber-600 fill-amber-200/80'
-                                    }`}
-                                  />
-                                ) : item.type === 'result_file' ? (
-                                  <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                                ) : (
-                                  <File className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
+              <div className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 overflow-y-auto min-h-0">
+                  {explorerItems.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-2">
+                      <Folder className="w-12 h-12 text-amber-300 fill-amber-100/50" />
+                      <p className="text-sm font-medium">No items</p>
+                      <p className="text-xs mt-1">Navigate to a request folder and upload files, or create a new folder</p>
+                    </div>
+                  ) : viewMode === 'grid' ? (
+                    /* Grid view */
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-1">
+                      {[...explorerItems].sort((a, b) => {
+                        const aFolder = ['customer', 'dept', 'request'].includes(a.type);
+                        const bFolder = ['customer', 'dept', 'request'].includes(b.type);
+                        if (aFolder && !bFolder) return -1;
+                        if (!aFolder && bFolder) return 1;
+                        let comp = 0;
+                        if (sortField === 'name') {
+                          comp = a.name.localeCompare(b.name);
+                        } else if (sortField === 'type') {
+                          comp = a.type.localeCompare(b.type);
+                        } else if (sortField === 'size') {
+                          comp = (a.fileSize || 0) - (b.fileSize || 0);
+                        } else if (sortField === 'status') {
+                          comp = (a.status || '').localeCompare(b.status || '');
+                        } else if (sortField === 'date') {
+                          comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+                        }
+                        return sortOrder === 'asc' ? comp : -comp;
+                      }).map((item) => {
+                        const isSelected = selectedItem?.id === item.id;
+                        const isFolder = item.type !== 'file' && item.type !== 'result_file';
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => handleSelectItem(item)}
+                            onDoubleClick={() => handleItemDoubleClick(item)}
+                            className={`flex flex-col items-center text-center p-3 border rounded-lg cursor-pointer transition select-none ${
+                              isSelected
+                                ? 'bg-blue-50/80 border-[#93c5fd] shadow-sm'
+                                : 'border-transparent hover:bg-blue-50 hover:border-gray-200'
+                            }`}
+                          >
+                            {isFolder ? (
+                              <div className="relative">
+                                <Folder
+                                  title={`${item.name} — ${item.type} (${item.itemCount} items)`}
+                                  className={`w-12 h-12 ${
+                                    item.type === 'customer'
+                                      ? 'text-amber-600 fill-amber-200/80'
+                                      : item.type === 'dept'
+                                      ? 'text-amber-600 fill-amber-200/80'
+                                      : 'text-amber-600 fill-amber-200/80'
+                                  }`}
+                                />
+                                <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
+                                  {item.itemCount}
+                                </span>
+                              </div>
+                            ) : item.type === 'result_file' ? (
+                              <div className="relative">
+                                <FileText title={`${item.name} — Result File (${formatFileSize(item.fileSize)})`} className="w-12 h-12 text-green-500 fill-green-50" />
+                                <CheckCircle className="w-3.5 h-3.5 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
+                              </div>
+                            ) : (
+                              <div className="relative">
+                                <FileText title={`${item.name} — ${item.status} (${formatFileSize(item.fileSize)})`} className="w-12 h-12 text-blue-600 fill-white" />
+                                {item.doc?.resultFile && (
+                                  <CheckCircle className="w-3 h-3 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
                                 )}
-                                <span className="truncate" title={`${item.name} — ${item.type}${item.status ? ` (${item.status})` : ''}${item.fileSize ? ` [${formatFileSize(item.fileSize)}]` : ''}`}>{item.name}</span>
-                              </td>
-                              <td className="py-2 px-3 text-gray-500 capitalize">{item.type === 'customer' ? 'Customer Space' : item.type === 'dept' ? 'Department Folder' : item.type === 'request' ? 'Request Batch' : 'Document File'}</td>
-                              <td className="py-2 px-3 text-gray-500">{isFolder ? `${item.itemCount} items` : formatFileSize(item.fileSize)}</td>
-                              <td className="py-2 px-3 text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                  {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
-                                  {item.status ? <StatusBadge status={item.status} /> : '-'}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                              </div>
+                            )}
+                            <span className="text-[11px] font-medium text-gray-700 mt-2 truncate w-full" title={item.name}>
+                              {item.name}
+                            </span>
+                            <div className="mt-1 flex flex-col items-center gap-0.5">
+                              {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
+                              {item.status && <StatusBadge status={item.status} />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* Details list view */
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-[#e5e7eb] font-semibold text-gray-400 uppercase tracking-wider cursor-pointer">
+                            <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('name')}>Name {sortField === 'name' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                            <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('type')}>Type {sortField === 'type' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                            <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('size')}>Size {sortField === 'size' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                            <th className="py-2.5 px-3 text-center hover:text-blue-600" onClick={() => handleHeaderClick('status')}>Status {sortField === 'status' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#e5e7eb]">
+                          {[...explorerItems].sort((a, b) => {
+                            const aFolder = ['customer', 'dept', 'request'].includes(a.type);
+                            const bFolder = ['customer', 'dept', 'request'].includes(b.type);
+                            if (aFolder && !bFolder) return -1;
+                            if (!aFolder && bFolder) return 1;
+                            let comp = 0;
+                            if (sortField === 'name') {
+                              comp = a.name.localeCompare(b.name);
+                            } else if (sortField === 'type') {
+                              comp = a.type.localeCompare(b.type);
+                            } else if (sortField === 'size') {
+                              comp = (a.fileSize || 0) - (b.fileSize || 0);
+                            } else if (sortField === 'status') {
+                              comp = (a.status || '').localeCompare(b.status || '');
+                            } else if (sortField === 'date') {
+                              comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+                            }
+                            return sortOrder === 'asc' ? comp : -comp;
+                          }).map((item) => {
+                            const isSelected = selectedItem?.id === item.id;
+                            const isFolder = item.type !== 'file' && item.type !== 'result_file';
+                            return (
+                              <tr
+                                key={item.id}
+                                onClick={() => handleSelectItem(item)}
+                                onDoubleClick={() => handleItemDoubleClick(item)}
+                                className={`cursor-pointer ${
+                                  isSelected ? 'bg-blue-50 font-semibold' : 'hover:bg-blue-50/50'
+                                }`}
+                              >
+                                <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
+                                  {isFolder ? (
+                                    <Folder
+                                      className={`w-3.5 h-3.5 shrink-0 ${
+                                        item.type === 'customer'
+                                          ? 'text-amber-600 fill-amber-200/80'
+                                          : item.type === 'dept'
+                                          ? 'text-amber-600 fill-amber-200/80'
+                                          : 'text-amber-600 fill-amber-200/80'
+                                      }`}
+                                    />
+                                  ) : item.type === 'result_file' ? (
+                                    <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                                  ) : (
+                                    <File className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
+                                  )}
+                                  <span className="truncate" title={`${item.name} — ${item.type}${item.status ? ` (${item.status})` : ''}${item.fileSize ? ` [${formatFileSize(item.fileSize)}]` : ''}`}>{item.name}</span>
+                                </td>
+                                <td className="py-2 px-3 text-gray-500 capitalize">{item.type === 'customer' ? 'Customer Space' : item.type === 'dept' ? 'Department Folder' : item.type === 'request' ? 'Request Batch' : 'Document File'}</td>
+                                <td className="py-2 px-3 text-gray-500">{isFolder ? `${item.itemCount} items` : formatFileSize(item.fileSize)}</td>
+                                <td className="py-2 px-3 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
+                                    {item.status ? <StatusBadge status={item.status} /> : '-'}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
                 {/* Pagination Controls */}
-                <div className="mt-4 flex items-center justify-between border-t pt-3 shrink-0">
+                <div className="mt-auto flex items-center justify-between border-t pt-3 shrink-0 bg-white">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500">Rows per page:</span>
                     <select
@@ -1117,7 +1119,7 @@ export default function AdminDocumentsExplorer() {
                         setLimit(parseInt(e.target.value));
                         setPage(1);
                       }}
-                      className="text-xs border rounded px-2 py-1 outline-none bg-white font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs border rounded px-2 py-1 outline-none bg-white font-semibold text-gray-700 hover:bg-blue-50 cursor-pointer"
                     >
                       <option value={10}>10</option>
                       <option value={25}>25</option>

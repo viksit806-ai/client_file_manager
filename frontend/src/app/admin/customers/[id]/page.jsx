@@ -47,7 +47,7 @@ export default function CustomerDocumentsPage() {
 
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-blue-50 text-blue-900 border-b border-gray-100">
             <tr>
               <th className="text-left px-4 py-3 font-medium">Title</th>
               <th className="text-left px-4 py-3 font-medium">Category</th>
@@ -60,7 +60,7 @@ export default function CustomerDocumentsPage() {
             {docs.length === 0 ? (
               <tr><td colSpan={5} className="text-center py-8 text-gray-500">No documents</td></tr>
             ) : docs.map((doc) => (
-              <tr key={doc._id} className="hover:bg-gray-50">
+              <tr key={doc._id} className="hover:bg-blue-50/50">
                 <td className="px-4 py-3 font-medium">
                   <div>{doc.title || doc.originalName}</div>
                   {doc.description && (

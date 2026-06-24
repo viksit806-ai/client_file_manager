@@ -81,13 +81,13 @@ export default function DepartmentSubmissionsPage() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="flex flex-col h-[calc(100vh-8.5rem)] min-h-0">
+      <div className="mb-6 shrink-0">
         <h1 className="text-2xl font-bold">Submissions</h1>
         <p className="text-sm text-gray-500 mt-0.5">Search and browse all customer submissions</p>
       </div>
 
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
+      <div className="flex items-center gap-3 mb-4 flex-wrap shrink-0">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -109,7 +109,7 @@ export default function DepartmentSubmissionsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm border rounded-lg px-3 py-2 outline-none bg-white"
+            className="text-sm border rounded-lg px-3 py-2 outline-none bg-white font-medium"
           >
             <option value="">All Status</option>
             <option value="pending">Pending</option>
@@ -125,13 +125,13 @@ export default function DepartmentSubmissionsPage() {
       </div>
 
       {loading ? (
-        <div className="animate-pulse space-y-3">
+        <div className="animate-pulse space-y-3 flex-1 overflow-y-auto">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-14 bg-gray-100 rounded-lg" />
+            <div key={i} className="h-14 bg-blue-50 rounded-lg" />
           ))}
         </div>
       ) : docs.length === 0 ? (
-        <div className="flex flex-col items-center py-20 text-gray-400 gap-2">
+        <div className="flex flex-col items-center py-20 text-gray-400 gap-2 flex-1 justify-center">
           <FileText className="w-12 h-12 text-gray-300" />
           <p className="text-sm font-medium">
             {debouncedSearch || statusFilter ? 'No submissions match your search' : 'No submissions yet'}
@@ -143,11 +143,11 @@ export default function DepartmentSubmissionsPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="bg-white rounded-lg shadow border border-gray-200 flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider">
+                <tr className="border-b bg-blue-50 text-blue-900 uppercase text-[10px] tracking-wider sticky top-0 z-10">
                   <th className="py-3 px-4 font-semibold w-1/3">Customer</th>
                   <th className="py-3 px-4 font-semibold">Document</th>
                   <th className="py-3 px-4 font-semibold">Status</th>
@@ -226,13 +226,13 @@ export default function DepartmentSubmissionsPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50 text-xs text-gray-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-white text-xs text-gray-500 shrink-0">
             <div className="flex items-center gap-2">
               <span>Rows per page:</span>
               <select
                 value={limit}
                 onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                className="border rounded px-2 py-1 outline-none bg-white text-xs"
+                className="border rounded px-2 py-1 outline-none bg-white text-xs hover:bg-blue-50 font-semibold cursor-pointer"
               >
                 {PAGE_SIZES.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -247,7 +247,7 @@ export default function DepartmentSubmissionsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="p-1.5 border rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 border rounded hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -266,7 +266,7 @@ export default function DepartmentSubmissionsPage() {
                   <button
                     key={pageNum}
                     onClick={() => setPage(pageNum)}
-                    className={`w-7 h-7 rounded text-xs font-medium transition ${page === pageNum ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-600'}`}
+                    className={`w-7 h-7 rounded text-xs font-semibold transition ${page === pageNum ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 text-gray-600'}`}
                   >
                     {pageNum}
                   </button>
@@ -275,7 +275,7 @@ export default function DepartmentSubmissionsPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="p-1.5 border rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 border rounded hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

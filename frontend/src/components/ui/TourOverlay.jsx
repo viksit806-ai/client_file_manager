@@ -109,7 +109,7 @@ export default function TourOverlay({ role = 'user' }) {
             {step > 1 && (
               <button
                 onClick={prevStep}
-                className="px-3 py-1.5 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-xs font-semibold flex items-center gap-1 transition"
+                className="px-3 py-1.5 border border-gray-200 text-gray-700 hover:bg-blue-50 rounded-lg text-xs font-semibold flex items-center gap-1 transition"
               >
                 <ChevronLeft className="w-3.5 h-3.5" /> Back
               </button>

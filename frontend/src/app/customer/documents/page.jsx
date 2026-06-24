@@ -396,13 +396,13 @@ export default function CustomerDocumentsExplorer() {
     setSelectedItem(folderItem);
   };
 
-  const panelClassName = 'bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
+  const panelClassName = 'bg-white border-l border-[#e5e7eb] h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
     ? 'fixed inset-y-0 right-0 z-50 w-[85vw] max-w-sm shadow-xl transition-transform duration-300 ' + (selectedItem ? 'translate-x-0' : 'translate-x-full')
-    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-gray-50/30'));
+    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-white'));
 
   return (
     <>
-    <div className="flex flex-col -m-6 h-screen bg-[#f3f4f6] select-none overflow-hidden">
+    <div className="flex flex-col -m-6 h-screen bg-white select-none overflow-hidden">
       
       {/* Top Address & Action Bar */}
       <div className="h-12 bg-white border-b border-[#e5e7eb] flex items-center px-3 justify-between gap-3 shrink-0">
@@ -412,7 +412,7 @@ export default function CustomerDocumentsExplorer() {
           <button
             onClick={handleBack}
             disabled={historyIndex === 0}
-            className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+            className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
             title="Back"
           >
             <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
@@ -420,7 +420,7 @@ export default function CustomerDocumentsExplorer() {
           <button
             onClick={handleForward}
             disabled={historyIndex === history.length - 1}
-            className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+            className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
             title="Forward"
           >
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -428,7 +428,7 @@ export default function CustomerDocumentsExplorer() {
           <button
             onClick={handleUp}
             disabled={currentPath.length === 0}
-            className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+            className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
             title="Up to Parent Folder"
           >
             <ArrowUp className="w-4 h-4 stroke-[2.5]" />
@@ -436,7 +436,7 @@ export default function CustomerDocumentsExplorer() {
         </div>
 
         {/* Address Bar Breadcrumbs */}
-        <div className="flex-1 max-w-2xl bg-[#f9fafb] border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-gray-600 gap-1 scrollbar-none font-medium">
+        <div className="flex-1 max-w-2xl bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-gray-600 gap-1 scrollbar-none font-medium">
           <HardDrive className="w-3.5 h-3.5 text-gray-400 shrink-0" />
           <span className="text-gray-400 font-bold">This PC</span>
           <ChevronRight className="w-3 h-3 text-gray-300" />
@@ -461,7 +461,7 @@ export default function CustomerDocumentsExplorer() {
         </div>
 
         {/* Search Bar Input */}
-        <div className="relative w-48 bg-[#f9fafb] border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 shrink-0">
+        <div className="relative w-48 bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 shrink-0">
           <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
           <input
             type="text"
@@ -478,7 +478,7 @@ export default function CustomerDocumentsExplorer() {
         </div>
 
         {/* Sort Dropdown Selector */}
-        <div className="flex items-center gap-1 border rounded bg-[#f3f4f6] p-0.5 shrink-0 text-xs text-gray-700">
+        <div className="flex items-center gap-1 border rounded bg-white p-0.5 shrink-0 text-xs text-gray-700">
           <span className="px-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sort:</span>
           <select
             value={sortField}
@@ -493,7 +493,7 @@ export default function CustomerDocumentsExplorer() {
           </select>
           <button
             onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-            className="p-1 bg-white hover:bg-gray-100 rounded text-gray-600 font-bold text-[10px] w-6 text-center"
+            className="p-1 bg-white hover:bg-blue-50 rounded text-gray-600 font-bold text-[10px] w-6 text-center"
             title={sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
           >
             {sortOrder === 'asc' ? '▲' : '▼'}
@@ -502,7 +502,7 @@ export default function CustomerDocumentsExplorer() {
 
           {/* Layout Mode Toggles */}
           {!isSearching && (
-            <div className="flex border rounded bg-[#f3f4f6] p-0.5 shrink-0">
+            <div className="flex border rounded bg-white p-0.5 shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1 rounded ${viewMode === 'grid' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -530,7 +530,7 @@ export default function CustomerDocumentsExplorer() {
             <span className="font-semibold text-gray-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Quick Access</span>
             <button
               onClick={() => navigateToPath([])}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${currentPath.length === 0 && !isSearching ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'}`}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${currentPath.length === 0 && !isSearching ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-blue-50'}`}
             >
               <Monitor className="w-3.5 h-3.5 text-blue-500" />
               <span>My Documents</span>
@@ -547,7 +547,7 @@ export default function CustomerDocumentsExplorer() {
                   <button
                     key={dept.id}
                     onClick={() => handleSidebarDeptClick(dept)}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${isActive ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'}`}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${isActive ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-blue-50'}`}
                   >
                     <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80" />
                     <span className="truncate">{dept.name}</span>
@@ -559,14 +559,14 @@ export default function CustomerDocumentsExplorer() {
         </div>
 
         {/* Center Files Pane */}
-        <div className="flex-1 bg-white h-full overflow-y-auto p-4 flex flex-col">
+        <div className="flex-1 bg-white h-full p-4 flex flex-col overflow-hidden">
 
 
 
           {isSearching ? (
 
             /* Flat search view */
-            <div className="space-y-2 flex-1">
+            <div className="space-y-2 flex-1 overflow-y-auto">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Search Results ({searchResults.length} matches)</span>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
@@ -596,7 +596,7 @@ export default function CustomerDocumentsExplorer() {
                         key={d._id}
                         title={`Name: ${d.title || d.originalName}\nType: Submission File\nStatus: ${d.status}\nSize: ${formatFileSize(d.fileSize)}\nDate: ${formatDateTime(d.createdAt)}`}
                         onClick={() => setSelectedItem({ id: d._id, name: d.title || d.originalName, type: 'submission', doc: d })}
-                        className={`cursor-pointer ${selectedItem?.id === d._id ? 'bg-blue-50 font-medium' : 'hover:bg-gray-50/50'}`}
+                        className={`cursor-pointer ${selectedItem?.id === d._id ? 'bg-blue-50 font-medium' : 'hover:bg-blue-50/50'}`}
                       >
                         <td className="py-2.5 px-2 flex items-center gap-2 max-w-xs">
                           <FileText className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
@@ -615,148 +615,150 @@ export default function CustomerDocumentsExplorer() {
             </div>
           ) : (
             /* Explorer content folder navigator */
-            <div className="flex-1">
-              {explorerItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-3">
-                  <Folder className="w-16 h-16 text-amber-300 fill-amber-100/50" />
-                  <div><p className="text-sm font-medium text-gray-500">This folder is empty</p><p className="text-xs text-gray-400 mt-0.5">Upload documents to get started</p></div>
-                  <Link href="/customer/upload" className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition">Upload Documents</Link>
-                </div>
-              ) : viewMode === 'grid' ? (
-                /* Grid view folder icon layout */
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {[...explorerItems].sort((a, b) => {
-                    const aFolder = ['dept', 'request', 'customer'].includes(a.type);
-                    const bFolder = ['dept', 'request', 'customer'].includes(b.type);
-                    if (aFolder && !bFolder) return -1;
-                    if (!aFolder && bFolder) return 1;
-                    let comp = 0;
-                    if (sortField === 'name') {
-                      comp = a.name.localeCompare(b.name);
-                    } else if (sortField === 'type') {
-                      comp = a.type.localeCompare(b.type);
-                    } else if (sortField === 'size') {
-                      comp = (a.fileSize || 0) - (b.fileSize || 0);
-                    } else if (sortField === 'status') {
-                      comp = (a.status || '').localeCompare(b.status || '');
-                    } else if (sortField === 'date') {
-                      comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-                    }
-                    return sortOrder === 'asc' ? comp : -comp;
-                  }).map((item) => {
-                    const isSelected = selectedItem?.id === item.id;
-                    const isFolder = item.type === 'dept' || item.type === 'request';
-                    return (
-                      <div
-                        key={item.id}
-                        title={`Name: ${item.name}\nType: ${item.type === 'dept' ? 'Department Folder' : item.type === 'request' ? 'Request Batch' : item.type === 'submission' ? 'Submission File' : 'Result Document'}${item.status ? `\nStatus: ${item.status}` : ''}${item.fileSize ? `\nSize: ${formatFileSize(item.fileSize)}` : ''}${item.createdAt ? `\nDate: ${formatDateTime(item.createdAt)}` : ''}${item.itemCount ? `\nItems: ${item.itemCount}` : ''}`}
-                            onClick={() => setSelectedItem(item)}
-                        onDoubleClick={() => handleItemDoubleClick(item)}
-                        className={`flex flex-col items-center text-center p-3 border rounded-lg cursor-pointer transition select-none ${
-                          isSelected
-                            ? 'bg-blue-50/80 border-[#93c5fd] shadow-sm'
-                            : 'border-transparent hover:bg-gray-50 hover:border-gray-200'
-                        }`}
-                      >
-                        {isFolder ? (
-                          <div className="relative">
-                            <Folder className={`w-12 h-12 text-amber-600 fill-amber-200/80`} />
-                            <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
-                              {item.itemCount}
-                            </span>
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 overflow-y-auto min-h-0">
+                {explorerItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-3">
+                    <Folder className="w-16 h-16 text-amber-300 fill-amber-100/50" />
+                    <div><p className="text-sm font-medium text-gray-500">This folder is empty</p><p className="text-xs text-gray-400 mt-0.5">Upload documents to get started</p></div>
+                    <Link href="/customer/upload" className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition">Upload Documents</Link>
+                  </div>
+                ) : viewMode === 'grid' ? (
+                  /* Grid view folder icon layout */
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-1">
+                    {[...explorerItems].sort((a, b) => {
+                      const aFolder = ['dept', 'request', 'customer'].includes(a.type);
+                      const bFolder = ['dept', 'request', 'customer'].includes(b.type);
+                      if (aFolder && !bFolder) return -1;
+                      if (!aFolder && bFolder) return 1;
+                      let comp = 0;
+                      if (sortField === 'name') {
+                        comp = a.name.localeCompare(b.name);
+                      } else if (sortField === 'type') {
+                        comp = a.type.localeCompare(b.type);
+                      } else if (sortField === 'size') {
+                        comp = (a.fileSize || 0) - (b.fileSize || 0);
+                      } else if (sortField === 'status') {
+                        comp = (a.status || '').localeCompare(b.status || '');
+                      } else if (sortField === 'date') {
+                        comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+                      }
+                      return sortOrder === 'asc' ? comp : -comp;
+                    }).map((item) => {
+                      const isSelected = selectedItem?.id === item.id;
+                      const isFolder = item.type === 'dept' || item.type === 'request';
+                      return (
+                        <div
+                          key={item.id}
+                          title={`Name: ${item.name}\nType: ${item.type === 'dept' ? 'Department Folder' : item.type === 'request' ? 'Request Batch' : item.type === 'submission' ? 'Submission File' : 'Result Document'}${item.status ? `\nStatus: ${item.status}` : ''}${item.fileSize ? `\nSize: ${formatFileSize(item.fileSize)}` : ''}${item.createdAt ? `\nDate: ${formatDateTime(item.createdAt)}` : ''}${item.itemCount ? `\nItems: ${item.itemCount}` : ''}`}
+                              onClick={() => setSelectedItem(item)}
+                          onDoubleClick={() => handleItemDoubleClick(item)}
+                          className={`flex flex-col items-center text-center p-3 border rounded-lg cursor-pointer transition select-none ${
+                            isSelected
+                              ? 'bg-blue-50/80 border-[#93c5fd] shadow-sm'
+                              : 'border-transparent hover:bg-blue-50 hover:border-gray-200'
+                          }`}
+                        >
+                          {isFolder ? (
+                            <div className="relative">
+                              <Folder className={`w-12 h-12 text-amber-600 fill-amber-200/80`} />
+                              <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
+                                {item.itemCount}
+                              </span>
+                            </div>
+                          ) : item.type === 'result' ? (
+                            <div className="relative">
+                              <FileText className="w-12 h-12 text-green-500 fill-green-50" />
+                              <CheckCircle className="w-3.5 h-3.5 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              <FileText className="w-12 h-12 text-blue-600 fill-white" />
+                            </div>
+                          )}
+                          <span className="text-[11px] font-medium text-gray-700 mt-2 truncate w-full" title={item.name}>
+                            {item.name}
+                          </span>
+                          <div className="mt-1 flex flex-col items-center gap-0.5">
+                            {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
+                            {item.status && <StatusBadge status={item.status} />}
                           </div>
-                        ) : item.type === 'result' ? (
-                          <div className="relative">
-                            <FileText className="w-12 h-12 text-green-500 fill-green-50" />
-                            <CheckCircle className="w-3.5 h-3.5 text-green-600 bg-white rounded-full absolute -bottom-0.5 -right-0.5" />
-                          </div>
-                        ) : (
-                          <div className="relative">
-                            <FileText className="w-12 h-12 text-blue-600 fill-white" />
-                          </div>
-                        )}
-                        <span className="text-[11px] font-medium text-gray-700 mt-2 truncate w-full" title={item.name}>
-                          {item.name}
-                        </span>
-                        <div className="mt-1 flex flex-col items-center gap-0.5">
-                          {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
-                          {item.status && <StatusBadge status={item.status} />}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                /* Details List View */
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-[#e5e7eb] font-semibold text-gray-400 uppercase tracking-wider cursor-pointer">
-                        <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('name')}>Name {sortField === 'name' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                        <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('type')}>Type {sortField === 'type' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                        <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('size')}>Size {sortField === 'size' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                        <th className="py-2.5 px-3 text-center hover:text-blue-600" onClick={() => handleHeaderClick('status')}>Status {sortField === 'status' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#e5e7eb]">
-                      {[...explorerItems].sort((a, b) => {
-                        const aFolder = ['dept', 'request', 'customer'].includes(a.type);
-                        const bFolder = ['dept', 'request', 'customer'].includes(b.type);
-                        if (aFolder && !bFolder) return -1;
-                        if (!aFolder && bFolder) return 1;
-                        let comp = 0;
-                        if (sortField === 'name') {
-                          comp = a.name.localeCompare(b.name);
-                        } else if (sortField === 'type') {
-                          comp = a.type.localeCompare(b.type);
-                        } else if (sortField === 'size') {
-                          comp = (a.fileSize || 0) - (b.fileSize || 0);
-                        } else if (sortField === 'status') {
-                          comp = (a.status || '').localeCompare(b.status || '');
-                        } else if (sortField === 'date') {
-                          comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-                        }
-                        return sortOrder === 'asc' ? comp : -comp;
-                      }).map((item) => {
-                        const isSelected = selectedItem?.id === item.id;
-                        const isFolder = item.type === 'dept' || item.type === 'request';
-                        return (
-                          <tr
-                            key={item.id}
-                            title={`Name: ${item.name}\nType: ${item.type === 'dept' ? 'Department Folder' : item.type === 'request' ? 'Request Batch' : item.type === 'submission' ? 'Submission File' : 'Result Document'}${item.status ? `\nStatus: ${item.status}` : ''}${item.fileSize ? `\nSize: ${formatFileSize(item.fileSize)}` : ''}${item.createdAt ? `\nDate: ${formatDateTime(item.createdAt)}` : ''}${item.itemCount ? `\nItems: ${item.itemCount}` : ''}`}
-                        onClick={() => setSelectedItem(item)}
-                            onDoubleClick={() => handleItemDoubleClick(item)}
-                            className={`cursor-pointer ${
-                              isSelected ? 'bg-blue-50 font-semibold' : 'hover:bg-gray-50/50'
-                            }`}
-                          >
-                            <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
-                              {isFolder ? (
-                                <Folder className={`w-3.5 h-3.5 shrink-0 text-amber-600 fill-amber-200/80`} />
-                              ) : item.type === 'result' ? (
-                                <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                              ) : (
-                                <File className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
-                              )}
-                              <span className="truncate">{item.name}</span>
-                            </td>
-                            <td className="py-2 px-3 text-gray-500 capitalize">{item.type === 'dept' ? 'Department folder' : item.type === 'request' ? 'Request batch' : 'File'}</td>
-                            <td className="py-2 px-3 text-gray-500">{isFolder ? `${item.itemCount} items` : formatFileSize(item.fileSize)}</td>
-                            <td className="py-2 px-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
-                                {item.status ? <StatusBadge status={item.status} /> : '-'}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* Details List View */
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-[#e5e7eb] font-semibold text-gray-400 uppercase tracking-wider cursor-pointer">
+                          <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('name')}>Name {sortField === 'name' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                          <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('type')}>Type {sortField === 'type' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                          <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('size')}>Size {sortField === 'size' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                          <th className="py-2.5 px-3 text-center hover:text-blue-600" onClick={() => handleHeaderClick('status')}>Status {sortField === 'status' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#e5e7eb]">
+                        {[...explorerItems].sort((a, b) => {
+                          const aFolder = ['dept', 'request', 'customer'].includes(a.type);
+                          const bFolder = ['dept', 'request', 'customer'].includes(b.type);
+                          if (aFolder && !bFolder) return -1;
+                          if (!aFolder && bFolder) return 1;
+                          let comp = 0;
+                          if (sortField === 'name') {
+                            comp = a.name.localeCompare(b.name);
+                          } else if (sortField === 'type') {
+                            comp = a.type.localeCompare(b.type);
+                          } else if (sortField === 'size') {
+                            comp = (a.fileSize || 0) - (b.fileSize || 0);
+                          } else if (sortField === 'status') {
+                            comp = (a.status || '').localeCompare(b.status || '');
+                          } else if (sortField === 'date') {
+                            comp = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+                          }
+                          return sortOrder === 'asc' ? comp : -comp;
+                        }).map((item) => {
+                          const isSelected = selectedItem?.id === item.id;
+                          const isFolder = item.type === 'dept' || item.type === 'request';
+                          return (
+                            <tr
+                              key={item.id}
+                              title={`Name: ${item.name}\nType: ${item.type === 'dept' ? 'Department Folder' : item.type === 'request' ? 'Request Batch' : item.type === 'submission' ? 'Submission File' : 'Result Document'}${item.status ? `\nStatus: ${item.status}` : ''}${item.fileSize ? `\nSize: ${formatFileSize(item.fileSize)}` : ''}${item.createdAt ? `\nDate: ${formatDateTime(item.createdAt)}` : ''}${item.itemCount ? `\nItems: ${item.itemCount}` : ''}`}
+                          onClick={() => setSelectedItem(item)}
+                              onDoubleClick={() => handleItemDoubleClick(item)}
+                              className={`cursor-pointer ${
+                                isSelected ? 'bg-blue-50 font-semibold' : 'hover:bg-blue-50/50'
+                              }`}
+                            >
+                              <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
+                                {isFolder ? (
+                                  <Folder className={`w-3.5 h-3.5 shrink-0 text-amber-600 fill-amber-200/80`} />
+                                ) : item.type === 'result' ? (
+                                  <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                                ) : (
+                                  <File className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
+                                )}
+                                <span className="truncate">{item.name}</span>
+                              </td>
+                              <td className="py-2 px-3 text-gray-500 capitalize">{item.type === 'dept' ? 'Department folder' : item.type === 'request' ? 'Request batch' : 'File'}</td>
+                              <td className="py-2 px-3 text-gray-500">{isFolder ? `${item.itemCount} items` : formatFileSize(item.fileSize)}</td>
+                              <td className="py-2 px-3 text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                  {item.slaStatus && item.status !== 'completed' && item.status !== 'blocked' && <SlaBadge slaStatus={item.slaStatus} />}
+                                  {item.status ? <StatusBadge status={item.status} /> : '-'}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        }).filter(Boolean)}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
               {/* Pagination Controls */}
-              <div className="mt-4 flex items-center justify-between border-t pt-3 shrink-0">
+              <div className="mt-auto flex items-center justify-between border-t pt-3 shrink-0 bg-white">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">Rows per page:</span>
                   <select
@@ -765,7 +767,7 @@ export default function CustomerDocumentsExplorer() {
                       setLimit(parseInt(e.target.value));
                       setPage(1);
                     }}
-                    className="text-xs border rounded px-2 py-1 outline-none bg-white font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
+                    className="text-xs border rounded px-2 py-1 outline-none bg-white font-semibold text-gray-700 hover:bg-blue-50 cursor-pointer"
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
@@ -952,7 +954,7 @@ export default function CustomerDocumentsExplorer() {
             </button>
             <button
               onClick={() => setShowPaymentModal(false)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-blue-50 transition"
             >
               Close
             </button>

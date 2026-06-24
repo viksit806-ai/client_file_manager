@@ -93,7 +93,7 @@ export default function AdminFileCategoriesPage() {
         <div className="mb-6 p-4 bg-white border rounded-lg shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-sm">{editing ? 'Edit File Category' : 'New File Category'}</span>
-            <button onClick={() => setShowForm(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-4 h-4" /></button>
+            <button onClick={() => setShowForm(false)} className="p-1 hover:bg-blue-50 rounded"><X className="w-4 h-4" /></button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
@@ -134,7 +134,7 @@ export default function AdminFileCategoriesPage() {
             <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
               <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
             </button>
-            <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-blue-50">Cancel</button>
           </div>
         </div>
       )}
@@ -150,7 +150,7 @@ export default function AdminFileCategoriesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider">
+                <tr className="border-b bg-blue-50 text-blue-900 uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-4 font-semibold">Name</th>
                   <th className="py-3 px-4 font-semibold">Description</th>
                   <th className="py-3 px-4 font-semibold">Department</th>
@@ -159,7 +159,7 @@ export default function AdminFileCategoriesPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {categories.map(cat => (
-                  <tr key={cat._id} className="hover:bg-gray-50">
+                  <tr key={cat._id} className="hover:bg-blue-50/50">
                     <td className="py-3 px-4 font-medium text-gray-800">{cat.name}</td>
                     <td className="py-3 px-4 text-gray-500 text-xs">{cat.description || '-'}</td>
                     <td className="py-3 px-4 text-gray-600 text-xs">{cat.departmentId?.name || '-'}</td>

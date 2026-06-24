@@ -699,12 +699,12 @@ export default function DeptCustomerDocsExplorer() {
     setSelectedItem(folderItem);
   };
 
-  const panelClassName = 'bg-[#f9fafb] border-l border-[#e5e7eb] h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
+  const panelClassName = 'bg-white border-l border-[#e5e7eb] h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
     ? 'fixed inset-y-0 right-0 z-50 w-[85vw] max-w-sm shadow-xl transition-transform duration-300 ' + (selectedItem ? 'translate-x-0' : 'translate-x-full')
-    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-gray-50/30'));
+    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-white'));
 
   return (
-    <div className="flex flex-col -m-6 h-screen bg-[#f3f4f6] select-none overflow-hidden">
+    <div className="flex flex-col -m-6 h-screen bg-white select-none overflow-hidden">
         
         {/* Top Address & Action Bar */}
         <div className="h-12 bg-white border-b border-[#e5e7eb] flex items-center px-3 justify-between gap-3 shrink-0">
@@ -714,7 +714,7 @@ export default function DeptCustomerDocsExplorer() {
             <button
               onClick={handleBack}
               disabled={historyIndex === 0}
-              className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
               title="Back"
             >
               <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
@@ -722,7 +722,7 @@ export default function DeptCustomerDocsExplorer() {
             <button
               onClick={handleForward}
               disabled={historyIndex === history.length - 1}
-              className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
               title="Forward"
             >
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -730,7 +730,7 @@ export default function DeptCustomerDocsExplorer() {
             <button
               onClick={handleUp}
               disabled={currentPath.length === 0}
-              className="p-1 text-gray-700 hover:bg-[#f3f4f6] rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 text-gray-700 hover:bg-blue-50 rounded-full disabled:opacity-30 disabled:hover:bg-transparent"
               title="Up to Parent Folder"
             >
               <ArrowUp className="w-4 h-4 stroke-[2.5]" />
@@ -738,7 +738,7 @@ export default function DeptCustomerDocsExplorer() {
           </div>
 
           {/* Address Bar Breadcrumbs */}
-          <div className="flex-1 max-w-2xl bg-[#f9fafb] border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-gray-600 gap-1 scrollbar-none font-medium">
+          <div className="flex-1 max-w-2xl bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-gray-600 gap-1 scrollbar-none font-medium">
             <HardDrive className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <span className="text-gray-400 font-bold">This PC</span>
             <ChevronRight className="w-3 h-3 text-gray-300" />
@@ -763,7 +763,7 @@ export default function DeptCustomerDocsExplorer() {
           </div>
 
           {/* Search Bar Input */}
-          <div className="relative w-48 bg-[#f9fafb] border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 shrink-0">
+          <div className="relative w-48 bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 shrink-0">
             <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <input
               type="text"
@@ -780,7 +780,7 @@ export default function DeptCustomerDocsExplorer() {
           </div>
 
           {/* Sort Controls */}
-          <div className="flex items-center gap-1 border rounded bg-[#f3f4f6] p-0.5 shrink-0 text-xs text-gray-700">
+          <div className="flex items-center gap-1 border rounded bg-white p-0.5 shrink-0 text-xs text-gray-700">
             <span className="px-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sort:</span>
             <select
               value={sortField}
@@ -795,7 +795,7 @@ export default function DeptCustomerDocsExplorer() {
             </select>
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="p-1 bg-white hover:bg-gray-100 rounded text-gray-600 font-bold text-[10px] w-6 text-center"
+              className="p-1 bg-white hover:bg-blue-50 rounded text-gray-600 font-bold text-[10px] w-6 text-center"
               title={sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
             >
               {sortOrder === 'asc' ? '▲' : '▼'}
@@ -804,7 +804,7 @@ export default function DeptCustomerDocsExplorer() {
 
           {/* Layout Mode Toggles */}
           {!isSearching && (
-            <div className="flex border rounded bg-[#f3f4f6] p-0.5 shrink-0">
+            <div className="flex border rounded bg-white p-0.5 shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1 rounded ${viewMode === 'grid' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -833,7 +833,7 @@ export default function DeptCustomerDocsExplorer() {
               <span className="font-semibold text-gray-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Navigation</span>
               <Link
                 href="/department/customers"
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left hover:bg-gray-100 transition text-blue-600 font-semibold"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left hover:bg-blue-50 transition text-blue-600 font-semibold"
               >
                 <ArrowLeft className="w-3.5 h-3.5 text-blue-500" />
                 <span>Back to Customers</span>
@@ -844,7 +844,7 @@ export default function DeptCustomerDocsExplorer() {
               <span className="font-semibold text-gray-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Quick Access</span>
               <button
                 onClick={() => navigateToPath([])}
-                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${currentPath.length === 0 && !isSearching ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'}`}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${currentPath.length === 0 && !isSearching ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-blue-50'}`}
               >
                 <Monitor className="w-3.5 h-3.5 text-blue-500" />
                 <span>All Requests</span>
@@ -861,7 +861,7 @@ export default function DeptCustomerDocsExplorer() {
                     <button
                       key={req.id}
                       onClick={() => handleSidebarRequestClick(req)}
-                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${isActive ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'}`}
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${isActive ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-blue-50'}`}
                     >
                       <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80" />
                       <span className="truncate" title={req.name}>{req.name}</span>
@@ -890,7 +890,7 @@ export default function DeptCustomerDocsExplorer() {
                 className={`px-3 py-1.5 rounded text-xs font-semibold transition ${
                   explorerMode === 'requests'
                     ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-blue-50'
                 }`}
               >
                 Requests
@@ -900,7 +900,7 @@ export default function DeptCustomerDocsExplorer() {
                 className={`px-3 py-1.5 rounded text-xs font-semibold transition ${
                   explorerMode === 'responses'
                     ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-blue-50'
                 }`}
               >
                 Responses
@@ -949,7 +949,7 @@ export default function DeptCustomerDocsExplorer() {
                 <button onClick={handleCreateFolder} disabled={creatingFolder} className="px-3 py-1 bg-amber-500 text-white rounded text-xs font-semibold hover:bg-amber-600 disabled:opacity-50">
                   {creatingFolder ? 'Creating...' : 'Create'}
                 </button>
-                <button onClick={() => setShowCreateFolder(false)} className="px-2 py-1 border rounded text-xs text-gray-600 hover:bg-gray-100">Cancel</button>
+                <button onClick={() => setShowCreateFolder(false)} className="px-2 py-1 border rounded text-xs text-gray-600 hover:bg-blue-50">Cancel</button>
               </div>
             )}
 
@@ -1001,7 +1001,7 @@ export default function DeptCustomerDocsExplorer() {
                   <button onClick={handleUploadFilesToFolder} disabled={uploadingFiles || uploadFilesList.length === 0} className="px-3 py-1 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 disabled:opacity-50">
                     {uploadingFiles ? 'Uploading...' : 'Upload'}
                   </button>
-                  <button onClick={() => { setShowUploadFilesPanel(false); setUploadFilesList([]); }} className="px-2 py-1 border rounded text-xs text-gray-600 hover:bg-gray-100">Cancel</button>
+                  <button onClick={() => { setShowUploadFilesPanel(false); setUploadFilesList([]); }} className="px-2 py-1 border rounded text-xs text-gray-600 hover:bg-blue-50">Cancel</button>
                 </div>
               </div>
             )}
@@ -1038,7 +1038,7 @@ export default function DeptCustomerDocsExplorer() {
                         <tr
                           key={d._id}
                           onClick={() => handleSelectItem({ id: d._id, name: d.title || d.originalName, type: 'submission', doc: d })}
-                          className={`cursor-pointer ${selectedItem?.id === d._id ? 'bg-blue-50 font-medium' : 'hover:bg-gray-50/50'}`}
+                          className={`cursor-pointer ${selectedItem?.id === d._id ? 'bg-blue-50 font-medium' : 'hover:bg-blue-50/50'}`}
                         >
                           <td className="py-2.5 px-2 flex items-center gap-2 max-w-xs">
                             <FileText className="w-3.5 h-3.5 text-blue-600 fill-white shrink-0" />
@@ -1095,7 +1095,7 @@ export default function DeptCustomerDocsExplorer() {
                           className={`flex flex-col items-center text-center p-3 border rounded-lg cursor-pointer transition select-none ${
                             isSelected
                               ? 'bg-blue-50/80 border-[#93c5fd] shadow-sm'
-                              : 'border-transparent hover:bg-gray-50 hover:border-gray-200'
+                              : 'border-transparent hover:bg-blue-50 hover:border-gray-200'
                           }`}
                         >
                           {isFolder ? (
@@ -1174,7 +1174,7 @@ export default function DeptCustomerDocsExplorer() {
                               onClick={() => handleSelectItem(item)}
                               onDoubleClick={() => handleItemDoubleClick(item)}
                               className={`cursor-pointer ${
-                                isSelected ? 'bg-blue-50 font-semibold' : 'hover:bg-gray-50/50'
+                                isSelected ? 'bg-blue-50 font-semibold' : 'hover:bg-blue-50/50'
                               }`}
                             >
                               <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
@@ -1238,7 +1238,7 @@ export default function DeptCustomerDocsExplorer() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                           {responseDocs.map(doc => (
-                            <tr key={doc._id} className="hover:bg-gray-50">
+                            <tr key={doc._id} className="hover:bg-blue-50/50">
                               <td className="py-2.5 px-3 flex items-center gap-2">
                                 <FileText className="w-3.5 h-3.5 text-green-600 shrink-0" />
                                 <span className="truncate font-medium">{doc.title || doc.originalName}</span>
@@ -1466,14 +1466,14 @@ export default function DeptCustomerDocsExplorer() {
                         <button
                           onClick={() => handleStatusChange(selectedItem.doc._id, 'processing')}
                           disabled={selectedItem.doc.status === 'processing'}
-                          className="flex-1 py-1 px-1 border rounded text-[9px] font-medium hover:bg-gray-50 disabled:opacity-40"
+                          className="flex-1 py-1 px-1 border rounded text-[9px] font-medium hover:bg-blue-50 disabled:opacity-40"
                         >
                           Processing
                         </button>
                         <button
                           onClick={() => handleStatusChange(selectedItem.doc._id, 'completed')}
                           disabled={selectedItem.doc.status === 'completed'}
-                          className="flex-1 py-1 px-1 border rounded text-[9px] font-medium hover:bg-gray-50 disabled:opacity-40"
+                          className="flex-1 py-1 px-1 border rounded text-[9px] font-medium hover:bg-blue-50 disabled:opacity-40"
                         >
                           Completed
                         </button>
@@ -1555,7 +1555,7 @@ export default function DeptCustomerDocsExplorer() {
                         if (file) setResponseFile(file);
                       }}
                       className={`p-3 rounded-lg border-2 border-dashed transition ${
-                        isDragOver ? 'border-blue-500 bg-blue-100/50' : 'border-gray-300 bg-gray-50'
+                        isDragOver ? 'border-blue-500 bg-blue-100/50' : 'border-gray-300 bg-white'
                       }`}
                     >
                       <label className="block text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Upload File</label>

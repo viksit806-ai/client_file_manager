@@ -23,14 +23,14 @@ export default function Pagination({ page, pages, onPageChange }) {
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 disabled:opacity-50"
         >
           Previous
         </button>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= pages}
-          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 disabled:opacity-50"
         >
           Next
         </button>
@@ -47,7 +47,7 @@ export default function Pagination({ page, pages, onPageChange }) {
             <button
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              className="relative inline-flex items-center rounded-l-md px-2.5 py-1.5 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-40"
+              className="relative inline-flex items-center rounded-l-md px-2.5 py-1.5 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0 disabled:opacity-40"
             >
               <span className="sr-only">Previous</span>
               &lsaquo;
@@ -59,7 +59,7 @@ export default function Pagination({ page, pages, onPageChange }) {
                 className={`relative inline-flex items-center px-3.5 py-1.5 text-xs font-semibold focus:z-20 ${
                   p === page
                     ? 'z-10 bg-blue-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'
+                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:outline-offset-0'
                 }`}
               >
                 {p}
@@ -68,7 +68,7 @@ export default function Pagination({ page, pages, onPageChange }) {
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page >= pages}
-              className="relative inline-flex items-center rounded-r-md px-2.5 py-1.5 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-40"
+              className="relative inline-flex items-center rounded-r-md px-2.5 py-1.5 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:z-20 focus:outline-offset-0 disabled:opacity-40"
             >
               <span className="sr-only">Next</span>
               &rsaquo;
