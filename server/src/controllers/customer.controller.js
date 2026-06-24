@@ -135,7 +135,7 @@ export const uploadDocument = async (req, res) => {
 
 export const getDocuments = async (req, res) => {
   const customerId = req.user._id;
-  const query = { customerId, isDeleted: { $ne: true } };
+  const query = { customerId, direction: 'submission', isDeleted: { $ne: true } };
 
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
