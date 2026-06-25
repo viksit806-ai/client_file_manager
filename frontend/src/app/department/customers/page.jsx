@@ -135,46 +135,46 @@ export default function DeptCustomersExplorer() {
     return sortOrder === 'asc' ? cmp : -cmp;
   });
 
-  const panelClassName = 'bg-white border-l border-[#e5e7eb] h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
+  const panelClassName = 'bg-slate-50/80 border-l border-slate-200/60 h-full p-4 overflow-y-auto flex flex-col gap-4 relative ' + (isMobile
     ? 'fixed inset-y-0 right-0 z-50 w-[85vw] max-w-sm shadow-xl transition-transform duration-300 ' + (selectedItem ? 'translate-x-0' : 'translate-x-full')
-    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-white'));
+    : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden bg-slate-50/80'));
 
   return (
     <div className="flex flex-col -m-6 h-screen bg-white select-none overflow-hidden">
 
       {/* Top Address & Action Bar */}
-      <div className="h-12 bg-white border-b border-[#e5e7eb] flex items-center px-3 justify-between gap-3 shrink-0">
+      <div className="h-12 bg-white border-b border-slate-200/80 flex items-center px-3 justify-between gap-3 shrink-0">
 
         <div className="flex items-center gap-1">
-          <button className="p-1 text-gray-400 cursor-not-allowed" disabled title="Back">
+          <button className="p-1 text-slate-400 cursor-not-allowed" disabled title="Back">
             <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
           </button>
-          <button className="p-1 text-gray-400 cursor-not-allowed" disabled title="Forward">
+          <button className="p-1 text-slate-400 cursor-not-allowed" disabled title="Forward">
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
           </button>
-          <button className="p-1 text-gray-400 cursor-not-allowed" disabled title="Up to Parent Folder">
+          <button className="p-1 text-slate-400 cursor-not-allowed" disabled title="Up to Parent Folder">
             <ArrowUp className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
-        <div className="flex-1 max-w-2xl bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-gray-600 gap-1 scrollbar-none font-medium">
-          <HardDrive className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-          <span className="text-gray-400 font-bold">This PC</span>
-          <ChevronRight className="w-3 h-3 text-gray-300" />
-          <span className="text-gray-800 font-semibold">Customers</span>
+        <div className="flex-1 max-w-2xl bg-slate-50 border border-slate-200/80 rounded-lg h-8 flex items-center px-2.5 overflow-x-auto whitespace-nowrap text-xs text-slate-600 gap-1.5 scrollbar-none font-medium">
+          <HardDrive className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span className="text-slate-400 font-bold">This PC</span>
+          <ChevronRight className="w-3 h-3 text-slate-300" />
+          <span className="text-slate-800 font-semibold">Customers</span>
         </div>
 
-        <div className="relative w-48 bg-white border border-[#e5e7eb] rounded-md h-8 flex items-center px-2.5 shrink-0">
-          <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+        <div className="relative w-48 bg-slate-50 border border-slate-200/80 rounded-lg h-8 flex items-center px-2.5 shrink-0 hover:border-slate-300 transition-colors focus-within:bg-white focus-within:border-blue-500/80">
+          <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <input
             type="text"
             placeholder="Search customers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent border-none text-xs ml-1.5 outline-none text-gray-700"
+            className="w-full bg-transparent border-none text-xs ml-1.5 outline-none text-slate-700"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="p-0.5 hover:bg-[#e5e7eb] rounded-full text-gray-400">
+            <button onClick={() => setSearch('')} className="p-0.5 hover:bg-slate-200 rounded-full text-slate-400">
               <X className="w-3 h-3" />
             </button>
           )}
@@ -238,30 +238,33 @@ export default function DeptCustomersExplorer() {
 
       {/* Workspace */}
       <div className="flex flex-row flex-1 overflow-hidden">
-
-        {/* Left Sidebar Tree */}
-        <div className="w-52 bg-white border-r border-[#e5e7eb] h-full overflow-y-auto shrink-0 hidden md:flex flex-col p-2 text-xs text-gray-700">
-          <div className="mb-3 border-b pb-2">
-            <span className="font-semibold text-gray-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Navigation</span>
-            <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none">
-              <Monitor className="w-3.5 h-3.5 text-blue-500" />
-              <span>All Customers</span>
+        {/* Left Sidebar */}
+        <div className="w-52 bg-slate-50/50 border-r border-slate-200/60 h-full overflow-y-auto shrink-0 flex flex-col p-3 text-xs text-slate-700">
+          
+          <div className="mb-4">
+            <span className="font-semibold text-slate-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Quick Access</span>
+            <button
+              onClick={() => handleItemClick(null)}
+              className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition ${!selectedItem ? 'bg-blue-100/70 text-blue-800 font-semibold shadow-xs' : 'hover:bg-slate-100'}`}
+            >
+              <Monitor className="w-3.5 h-3.5 text-blue-600" />
+              <span>Overview</span>
             </button>
           </div>
 
           <div>
-            <span className="font-semibold text-gray-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Customers</span>
+            <span className="font-semibold text-slate-400 block px-2 mb-1.5 uppercase text-[9px] tracking-wider">Customers</span>
             <div className="space-y-0.5">
               {sorted.map(c => (
                 <button
                   key={c._id}
                   onClick={() => handleItemClick({ id: c._id, name: c.name, ...c })}
                   onDoubleClick={() => handleItemDoubleClick({ id: c._id, name: c.name })}
-                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition ${
-                    selectedItem?.id === c._id ? 'bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-500 rounded-l-none' : 'hover:bg-gray-100'
+                  className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition ${
+                    selectedItem?.id === c._id ? 'bg-blue-100/70 text-blue-800 font-semibold shadow-xs' : 'hover:bg-slate-100'
                   }`}
                 >
-                  <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80 shrink-0" />
+                  <Folder className="w-3.5 h-3.5 text-blue-500 fill-blue-100/60 shrink-0" />
                   <span className="truncate" title={c.name}>{c.name}</span>
                 </button>
               ))}
@@ -276,8 +279,8 @@ export default function DeptCustomersExplorer() {
               {[1,2,3,4,5,6].map(i => <div key={i} className="h-32 bg-gray-100 rounded-lg" />)}
             </div>
           ) : sorted.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center py-20 text-gray-400 gap-2">
-              <Folder className="w-12 h-12 text-amber-300 fill-amber-100/50" />
+            <div className="flex flex-col items-center justify-center text-center py-20 text-slate-400 gap-2">
+              <Folder className="w-12 h-12 text-blue-300 fill-blue-100/40" />
               <span className="text-xs font-semibold">No customers found</span>
             </div>
           ) : viewMode === 'grid' ? (
@@ -294,8 +297,8 @@ export default function DeptCustomersExplorer() {
                     }`}
                   >
                     <div className="relative">
-                      <Folder className="w-12 h-12 text-amber-600 fill-amber-200/80" />
-                      <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-gray-500 px-0.5 border border-[#d1d5db] rounded shadow-xs">
+                      <Folder className="w-12 h-12 text-blue-500 fill-blue-100/60" />
+                      <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-slate-500 px-0.5 border border-slate-200 rounded shadow-xs">
                         {c.totalDocs}
                       </span>
                     </div>
@@ -331,7 +334,7 @@ export default function DeptCustomersExplorer() {
                       className={`cursor-pointer ${selectedItem?.id === c._id ? 'bg-blue-50 font-semibold' : 'hover:bg-blue-50/50'}`}
                     >
                       <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
-                        <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80 shrink-0" />
+                        <Folder className="w-3.5 h-3.5 text-blue-500 fill-blue-100/60 shrink-0" />
                         <span className="truncate">{c.name}</span>
                       </td>
                       <td className="py-2 px-3 text-gray-500">{c.totalDocs || 0}</td>
@@ -380,8 +383,8 @@ export default function DeptCustomersExplorer() {
                 </button>
               </div>
 
-              <div className="p-6 bg-white border border-[#e5e7eb] rounded-lg flex items-center justify-center shadow-xs">
-                <Folder className="w-14 h-14 text-amber-600 fill-amber-200/80" />
+              <div className="p-6 bg-white border border-slate-200/80 rounded-lg flex items-center justify-center shadow-xs">
+                <Folder className="w-14 h-14 text-blue-500 fill-blue-100/60" />
               </div>
 
               <div className="space-y-2">
@@ -426,7 +429,7 @@ export default function DeptCustomersExplorer() {
                   onClick={() => router.push(`/department/customers/${selectedItem.id}`)}
                   className="w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition flex items-center justify-center gap-1.5"
                 >
-                  <Folder className="w-3.5 h-3.5 text-amber-600 fill-amber-200/80" />
+                  <Folder className="w-3.5 h-3.5 text-blue-500 fill-blue-100/60 shrink-0" />
                   Open Customer Folder
                 </button>
               </div>
