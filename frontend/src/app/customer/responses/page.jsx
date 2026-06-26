@@ -4,12 +4,27 @@ import { customerAPI } from '@/lib/api';
 import { formatDateTime, formatFileSize } from '@/lib/utils';
 import { toast } from 'sonner';
 import { FileText, Download, Filter, Search, X } from 'lucide-react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export default function CustomerResponsesPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterCat, setFilterCat] = useState('');
+  const [search, setSearch] = useState(() => searchParams.get('search') || '');
+  const [filterCat, setFilterCat] = useState(() => searchParams.get('category') || '');
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (filterCat) params.set('category', filterCat);
+    
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [search, filterCat, pathname, router]);
+
 
   useEffect(() => {
     customerAPI.getResponses()

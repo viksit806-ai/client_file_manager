@@ -96,9 +96,11 @@ export const adminAPI = {
 export const customerAPI = {
   getDepartments: () => api.get('/customer/departments'),
   getDocuments: (params) => api.get('/customer/documents', { params }),
-  uploadDocument: (formData) => api.post('/customer/upload', formData, {
+  uploadDocument: (formData, config) => api.post('/customer/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    ...config
   }),
+
   downloadDocument: (id, type) => api.get(`/customer/documents/${id}/download`, { params: { type }, responseType: 'blob' }),
   getResponses: (params) => api.get('/customer/responses', { params }),
   getResponseCategories: () => api.get('/customer/response-categories'),
@@ -130,4 +132,11 @@ export const departmentAPI = {
   uploadFilesToFolder: (groupId, formData) => api.post(`/department/documents/group/${groupId}/upload`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
+  batchDocuments: (data) => api.post('/department/documents/batch', data),
 };
+
+
+export const searchAPI = {
+  globalSearch: (q) => api.get('/search', { params: { q } }),
+};
+

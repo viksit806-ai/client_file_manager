@@ -11,6 +11,7 @@ export default function CustomerUploadPage() {
   const [files, setFiles] = useState([]);
   const [requiresResult, setRequiresResult] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -97,6 +98,7 @@ export default function CustomerUploadPage() {
     }
 
     setUploading(true);
+    setProgress(0);
     const formData = new FormData();
     formData.append('departmentId', selectedDept);
     formData.append('description', description);
@@ -106,7 +108,14 @@ export default function CustomerUploadPage() {
     });
 
     try {
-      await customerAPI.uploadDocument(formData);
+      await customerAPI.uploadDocument(formData, {
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setProgress(percentCompleted);
+        }
+      });
       toast.success('Documents uploaded successfully');
       setFiles([]);
       setDescription('');
@@ -117,6 +126,7 @@ export default function CustomerUploadPage() {
       toast.error(err.response?.data?.message || 'Upload failed');
     } finally {
       setUploading(false);
+      setProgress(0);
     }
   };
 
@@ -212,13 +222,28 @@ export default function CustomerUploadPage() {
             </div>
           )}
 
+          {uploading && (
+            <div className="space-y-1.5 py-1">
+              <div className="flex justify-between text-xs text-gray-500 font-medium">
+                <span>Uploading files...</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/40">
+                <div
+                  className="bg-blue-600 h-full rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={uploading}
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
           >
             <UploadIcon className="w-4 h-4" />
-            {uploading ? 'Uploading...' : 'Submit Request'}
+            {uploading ? `Uploading (${progress}%)` : 'Submit Request'}
           </button>
         </form>
       </div>

@@ -863,7 +863,7 @@ export default function DeptCustomerDocsExplorer() {
                       onClick={() => handleSidebarRequestClick(req)}
                       className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition ${isActive ? 'bg-blue-100/70 text-blue-800 font-semibold shadow-xs' : 'hover:bg-slate-100'}`}
                     >
-                      <Folder className="w-3.5 h-3.5 text-blue-500 fill-blue-100/60" />
+                      <Folder className="w-3.5 h-3.5 text-[#52a6ec] fill-[#52a6ec]" />
                       <span className="truncate" title={req.name}>{req.name}</span>
                       {req.slaStatus && ['overdue', 'approaching'].includes(req.slaStatus) && (
                         <span className={`ml-auto text-[9px] font-bold px-1 py-0.5 rounded ${
@@ -1060,7 +1060,7 @@ export default function DeptCustomerDocsExplorer() {
               <div className="flex-1">
                 {explorerItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-20 text-slate-400 gap-2">
-                    <Folder className="w-12 h-12 text-blue-300 fill-blue-100/40" />
+                    <Folder className="w-12 h-12 text-[#52a6ec] fill-[#52a6ec]" />
                     <span className="text-xs font-semibold">Folder is empty</span>
                   </div>
                 ) : viewMode === 'grid' ? (
@@ -1100,7 +1100,7 @@ export default function DeptCustomerDocsExplorer() {
                         >
                           {isFolder ? (
                             <div className="relative">
-                              <Folder className="w-12 h-12 text-blue-500 fill-blue-100/60" />
+                              <Folder className="w-12 h-12 text-[#52a6ec] fill-[#52a6ec]" />
                               <span className="absolute bottom-2 right-1.5 bg-white text-[8px] font-extrabold text-slate-500 px-0.5 border border-slate-200 rounded shadow-xs">
                                 {item.itemCount}
                               </span>
@@ -1179,7 +1179,7 @@ export default function DeptCustomerDocsExplorer() {
                             >
                               <td className="py-2 px-3 flex items-center gap-2 max-w-sm">
                                 {isFolder ? (
-                                  <Folder className="w-3.5 h-3.5 text-blue-500 fill-blue-100/60 shrink-0" />
+                                  <Folder className="w-3.5 h-3.5 text-[#52a6ec] fill-[#52a6ec] shrink-0" />
                                 ) : item.type === 'result' ? (
                                   <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
                                 ) : (
@@ -1320,7 +1320,7 @@ export default function DeptCustomerDocsExplorer() {
                       <span className="text-[10px] text-gray-400">Loading preview...</span>
                     </div>
                   ) : selectedItem.type === 'request' ? (
-                    <Folder className="w-12 h-12 text-blue-500 fill-blue-100/60" />
+                    <Folder className="w-12 h-12 text-[#52a6ec] fill-[#52a6ec]" />
                   ) : previewUrl ? (
                     selectedItem.mimeType?.startsWith('image/') ? (
                       <img src={previewUrl} alt={selectedItem.name} className="max-h-full max-w-full object-contain" />
