@@ -199,33 +199,66 @@ body {
   color: #64748b !important;
 }
 
-/* Dark Mode Status Badges */
+/* Custom premium status badges for Light Mode */
+body:not(.dark) .bg-yellow-100 {
+  background-color: rgba(234, 179, 8, 0.08) !important;
+  border: 1px solid rgba(234, 179, 8, 0.3) !important;
+  color: #a16207 !important;
+}
+
+body:not(.dark) .bg-green-100 {
+  background-color: rgba(34, 197, 94, 0.08) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  color: #15803d !important;
+}
+
+body:not(.dark) .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #b91c1c !important;
+}
+
+body:not(.dark) .bg-blue-100 {
+  background-color: rgba(20, 184, 166, 0.08) !important;
+  border: 1px solid rgba(20, 184, 166, 0.3) !important;
+  color: #0f766e !important;
+}
+
+body:not(.dark) .bg-gray-100 {
+  background-color: rgba(100, 116, 139, 0.08) !important;
+  border: 1px solid rgba(100, 116, 139, 0.25) !important;
+  color: #475569 !important;
+}
+
+/* Custom premium status badges for Dark Mode */
 .dark .bg-yellow-100 {
   background-color: rgba(234, 179, 8, 0.15) !important;
-}
-.dark .text-yellow-800 {
+  border: 1px solid rgba(234, 179, 8, 0.35) !important;
   color: #fbbf24 !important;
 }
 
 .dark .bg-green-100 {
   background-color: rgba(34, 197, 94, 0.15) !important;
-}
-.dark .text-green-800 {
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
   color: #4ade80 !important;
 }
 
 .dark .bg-red-100 {
   background-color: rgba(239, 68, 68, 0.15) !important;
-}
-.dark .text-red-800 {
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
   color: #f87171 !important;
 }
 
 .dark .bg-blue-100 {
   background-color: rgba(20, 184, 166, 0.15) !important;
-}
-.dark .text-blue-800 {
+  border: 1px solid rgba(20, 184, 166, 0.35) !important;
   color: #2dd4bf !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: rgba(148, 163, 184, 0.12) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  color: #cbd5e1 !important;
 }
 
 /* Border overrides */
