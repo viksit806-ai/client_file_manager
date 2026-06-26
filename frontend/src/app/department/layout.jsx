@@ -5,6 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import ScrollToTop from '@/components/ui/ScrollToTop';
 import NotificationBell from '@/components/ui/NotificationBell';
 import GlobalSearchHeader from '@/components/ui/GlobalSearchHeader';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+
 import Link from 'next/link';
 
 import TourOverlay from '@/components/ui/TourOverlay';
@@ -162,11 +164,15 @@ export default function DepartmentLayout({ children }) {
           <Menu className="w-5 h-5" />
         </button>
       )}
-      <main className="flex-1 overflow-auto min-w-0">
-        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm border-b border-gray-200 flex items-center justify-between px-6 h-14">
+      <main className="flex-1 overflow-auto min-w-0 bg-[#f8fafc] dark:bg-[#0b0f19] transition-colors duration-200">
+        <div className="sticky top-0 z-30 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-sm border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-6 h-14 transition-colors duration-200">
           <GlobalSearchHeader />
-          <NotificationBell />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <NotificationBell />
+          </div>
         </div>
+
 
         <div className={`${isMobile && !sidebarOpen ? 'pt-14' : ''} p-4 sm:p-6`}>
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>

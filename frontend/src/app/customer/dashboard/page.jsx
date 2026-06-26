@@ -46,7 +46,7 @@ export default function CustomerDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">My Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100">My Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Pending" value={pending} icon={Clock} color="yellow" />
@@ -81,10 +81,10 @@ export default function CustomerDashboard() {
       {documents.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Status Doughnut Chart */}
-          <div className="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col">
+          <div className="bg-white dark:bg-[#131b2e] p-5 rounded-xl shadow-xs border border-gray-100 dark:border-slate-800 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <PieIcon className="w-4 h-4 text-blue-500" />
-              <h2 className="text-sm font-semibold text-gray-700">Document Status Breakdown</h2>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Document Status Breakdown</h2>
             </div>
             <div className="h-64 relative flex items-center justify-center">
               {statusData.length === 0 ? (
@@ -114,10 +114,10 @@ export default function CustomerDashboard() {
           </div>
 
           {/* Submissions by Dept Bar Chart */}
-          <div className="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col">
+          <div className="bg-white dark:bg-[#131b2e] p-5 rounded-xl shadow-xs border border-gray-100 dark:border-slate-800 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 className="w-4 h-4 text-blue-500" />
-              <h2 className="text-sm font-semibold text-gray-700">Submissions by Department</h2>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Submissions by Department</h2>
             </div>
             <div className="h-64">
               {deptData.length === 0 ? (
@@ -142,8 +142,8 @@ export default function CustomerDashboard() {
       )}
 
       {/* Recent Activity List */}
-      <div className="bg-white rounded-xl shadow-xs border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Documents</h2>
+      <div className="bg-white dark:bg-[#131b2e] rounded-xl shadow-xs border border-gray-100 dark:border-slate-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4">Recent Documents</h2>
         {documents.length === 0 ? (
           <div className="flex flex-col items-center py-12 text-gray-400 gap-3">
             <FileText className="w-12 h-12 text-gray-300" />
@@ -155,9 +155,9 @@ export default function CustomerDashboard() {
         ) : (
           <div className="space-y-2">
             {documents.slice(0, 5).map((doc) => (
-              <div key={doc._id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50/50 transition">
+              <div key={doc._id} className="flex items-center justify-between p-3 border dark:border-slate-800 rounded-lg hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate text-gray-700">{doc.title || doc.originalName}</p>
+                  <p className="text-sm font-medium truncate text-gray-700 dark:text-slate-200">{doc.title || doc.originalName}</p>
                   <p className="text-xs text-gray-400">
                     {doc.departmentId?.name || 'No Department'}
                     {" • "}{formatDateTime(doc.createdAt)}

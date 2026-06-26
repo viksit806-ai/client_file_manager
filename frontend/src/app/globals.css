@@ -1,9 +1,16 @@
 @import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
 }
+
+.dark {
+  --background: #0b0f19;
+  --foreground: #f1f5f9;
+}
+
 
 @theme {
   /* Remap default blue scale to a premium Teal palette */

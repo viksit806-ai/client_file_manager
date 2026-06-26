@@ -47,7 +47,7 @@ export default function DeptDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard — {user?.departmentId?.name || 'Department'}</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Dashboard — {user?.departmentId?.name || 'Department'}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard title="Total Documents" value={data?.totalDocs || 0} icon={FileText} color="blue" />
@@ -59,10 +59,10 @@ export default function DeptDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Workload Status Distribution */}
-        <div className="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col">
+        <div className="bg-white dark:bg-[#131b2e] p-5 rounded-xl shadow-xs border border-gray-100 dark:border-slate-800 flex flex-col">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-4 h-4 text-blue-500" />
-            <h2 className="text-sm font-semibold text-gray-700">Workload Status Distribution</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Workload Status Distribution</h2>
           </div>
           <div className="h-60 relative flex items-center justify-center">
             {statusData.length === 0 ? (
@@ -92,10 +92,10 @@ export default function DeptDashboard() {
         </div>
 
         {/* SLA Compliance breakdown */}
-        <div className="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col">
+        <div className="bg-white dark:bg-[#131b2e] p-5 rounded-xl shadow-xs border border-gray-100 dark:border-slate-800 flex flex-col">
           <div className="flex items-center gap-2 mb-4">
             <AlertCircle className="w-4 h-4 text-red-500" />
-            <h2 className="text-sm font-semibold text-gray-700">Active SLA Status Breakdown</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Active SLA Status Breakdown</h2>
           </div>
           <div className="h-60 relative flex items-center justify-center">
             {slaData.length === 0 ? (
@@ -125,8 +125,8 @@ export default function DeptDashboard() {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-xs">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">SLA Compliance (48hr Fulfillment)</h2>
+      <div className="bg-white dark:bg-[#131b2e] p-6 rounded-xl border border-gray-100 dark:border-slate-800 shadow-xs">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4">SLA Compliance (48hr Fulfillment)</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard title="Active — Overdue" value={data?.slaOverdue || 0} icon={AlertCircle} color="red" />
           <StatCard title="Active — At Risk" value={data?.slaApproaching || 0} icon={AlertTriangle} color="yellow" />
@@ -136,8 +136,8 @@ export default function DeptDashboard() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-xs border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Documents</h2>
+      <div className="bg-white dark:bg-[#131b2e] rounded-xl shadow-xs border border-gray-100 dark:border-slate-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4">Recent Documents</h2>
         {data?.recentDocs?.length > 0 ? (
           <div className="space-y-2">
             {data.recentDocs.map((doc) => {
@@ -145,11 +145,11 @@ export default function DeptDashboard() {
               return (
                 <div
                   key={doc._id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-blue-50/50 cursor-pointer transition"
+                  className="flex items-center justify-between p-3 border dark:border-slate-800 rounded-lg hover:bg-blue-50/50 dark:hover:bg-slate-850/20 cursor-pointer transition"
                   onClick={() => router.push(`/department/documents/${doc._id}`)}
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate text-gray-700">{doc.title || doc.originalName}</p>
+                    <p className="text-sm font-medium truncate text-gray-700 dark:text-slate-200">{doc.title || doc.originalName}</p>
                     <p className="text-xs text-gray-400">
                       {doc.customerId?.name}
                       {doc.description ? ` • "${doc.description.substring(0, 50)}${doc.description.length > 50 ? '...' : ''}"` : ''}
