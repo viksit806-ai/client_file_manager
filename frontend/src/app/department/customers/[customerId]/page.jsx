@@ -248,6 +248,30 @@ export default function DeptCustomerDocsExplorer() {
     }
   };
 
+  const handleCreateResponse = async () => {
+    if (!selectedFileCategory) { toast.error('Please select a file category'); return; }
+    if (!responseFile) { toast.error('Please select a file to upload'); return; }
+    setCreatingResponse(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', responseFile);
+      formData.append('customerId', customerId);
+      formData.append('fileCategoryId', selectedFileCategory);
+      formData.append('notes', responseNotes);
+      await departmentAPI.createResponse(formData);
+      toast.success('Response uploaded successfully');
+      setResponseFile(null);
+      setSelectedFileCategory('');
+      setResponseNotes('');
+      if (responseFileInputRef.current) responseFileInputRef.current.value = '';
+      loadResponses();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create response');
+    } finally {
+      setCreatingResponse(false);
+    }
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
@@ -526,20 +550,81 @@ export default function DeptCustomerDocsExplorer() {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto">
+              {/* Create Response Form */}
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 mb-4">
+                <h3 className="font-bold text-sm mb-3">Upload New Response</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">File Category</label>
+                    <select
+                      value={selectedFileCategory}
+                      onChange={(e) => setSelectedFileCategory(e.target.value)}
+                      className="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">Select a category...</option>
+                      {fileCategories.map(cat => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes (optional)</label>
+                    <textarea
+                      value={responseNotes}
+                      onChange={(e) => setResponseNotes(e.target.value)}
+                      placeholder="Add notes about this response..."
+                      rows={2}
+                      className="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">File</label>
+                    <input
+                      ref={responseFileInputRef}
+                      type="file"
+                      onChange={(e) => setResponseFile(e.target.files[0])}
+                      className="w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition"
+                    />
+                  </div>
+                  <button
+                    onClick={handleCreateResponse}
+                    disabled={creatingResponse}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl text-xs font-semibold shadow-xs transition"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{creatingResponse ? 'Uploading...' : 'Upload Response'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Response Documents List */}
               <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
                 <h3 className="font-bold text-sm mb-3">Response Documents</h3>
                 <div className="space-y-2">
-                  {responseDocs.map(r => (
-                    <div key={r._id} className="p-3 border rounded-xl flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
-                      <div className="flex items-center gap-2.5">
-                        <FileText className="w-4 h-4 text-emerald-500" />
-                        <div>
-                          <p className="font-semibold text-xs">{r.originalName}</p>
-                          <p className="text-[10px] text-slate-400">{formatDateTime(r.createdAt)}</p>
+                  {responseDocs.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-6">No response documents yet</p>
+                  ) : (
+                    responseDocs.map(r => (
+                      <div key={r._id} className="p-3 border rounded-xl flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <FileText className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-xs truncate">{r.originalName}</p>
+                            <p className="text-[10px] text-slate-400">{formatDateTime(r.createdAt)}{r.fileCategoryId?.name ? ` • ${r.fileCategoryId.name}` : ''}</p>
+                          </div>
                         </div>
+                        <a
+                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/department/documents/${r._id}/download`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 bg-blue-50 border border-blue-200 rounded text-blue-700 hover:bg-blue-100 transition shrink-0"
+                          title="Download"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </a>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>
