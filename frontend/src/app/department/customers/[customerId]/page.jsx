@@ -373,6 +373,19 @@ export default function DeptCustomerDocsExplorer() {
     setSelectedItem(folderItem);
   };
 
+  const handleResponseClick = (r) => {
+    setSelectedItem({
+      id: r._id,
+      name: r.originalName,
+      type: 'response',
+      fileSize: r.fileSize,
+      createdAt: r.createdAt,
+      fileCategory: r.fileCategoryId?.name,
+      notes: r.notes,
+      doc: r,
+    });
+  };
+
   const panelClassName = 'bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 h-full p-4 overflow-y-auto flex flex-col gap-4 relative shadow-sm ' + (isMobile
     ? 'fixed inset-y-0 right-0 z-50 w-[85vw] max-w-sm transition-transform duration-300 ' + (selectedItem ? 'translate-x-0' : 'translate-x-full')
     : 'shrink-0 ' + (selectedItem ? 'opacity-100' : 'lg:opacity-90 lg:block hidden'));
@@ -455,8 +468,8 @@ export default function DeptCustomerDocsExplorer() {
         {/* Center Files Pane */}
         <div className="flex-1 bg-slate-50/50 dark:bg-slate-900/50 h-full p-4 flex flex-col overflow-hidden relative">
           <div className="flex items-center gap-1 mb-3 border-b border-slate-200 dark:border-slate-800 pb-2">
-            <button onClick={() => setExplorerMode('requests')} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${explorerMode === 'requests' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/60 dark:hover:bg-slate-800'}`}>Requests</button>
-            <button onClick={() => setExplorerMode('responses')} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${explorerMode === 'responses' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/60 dark:hover:bg-slate-800'}`}>Responses</button>
+            <button onClick={() => { setExplorerMode('requests'); setSelectedItem(null); }} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${explorerMode === 'requests' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/60 dark:hover:bg-slate-800'}`}>Requests</button>
+            <button onClick={() => { setExplorerMode('responses'); setSelectedItem(null); }} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${explorerMode === 'responses' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/60 dark:hover:bg-slate-800'}`}>Responses</button>
           </div>
 
           {explorerMode === 'requests' ? (
@@ -604,26 +617,34 @@ export default function DeptCustomerDocsExplorer() {
                   {responseDocs.length === 0 ? (
                     <p className="text-xs text-slate-400 text-center py-6">No response documents yet</p>
                   ) : (
-                    responseDocs.map(r => (
-                      <div key={r._id} className="p-3 border rounded-xl flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                    responseDocs.map(r => {
+                      const isResponseSelected = selectedItem?.id === r._id;
+                      return (
+                      <div
+                        key={r._id}
+                        onClick={() => handleResponseClick(r)}
+                        className={`p-3 border rounded-xl flex items-center justify-between transition cursor-pointer ${isResponseSelected ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
+                      >
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <FileText className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <FileText className={`w-4 h-4 shrink-0 ${isResponseSelected ? 'text-white' : 'text-emerald-500'}`} />
                           <div className="min-w-0">
-                            <p className="font-semibold text-xs truncate">{r.originalName}</p>
-                            <p className="text-[10px] text-slate-400">{formatDateTime(r.createdAt)}{r.fileCategoryId?.name ? ` • ${r.fileCategoryId.name}` : ''}</p>
+                            <p className={`font-semibold text-xs truncate ${isResponseSelected ? 'text-white' : ''}`}>{r.originalName}</p>
+                            <p className={`text-[10px] ${isResponseSelected ? 'text-white/70' : 'text-slate-400'}`}>{formatDateTime(r.createdAt)}{r.fileCategoryId?.name ? ` • ${r.fileCategoryId.name}` : ''}</p>
                           </div>
                         </div>
                         <a
                           href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/department/documents/${r._id}/download`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 bg-blue-50 border border-blue-200 rounded text-blue-700 hover:bg-blue-100 transition shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                          className={`p-1.5 border rounded transition shrink-0 ${isResponseSelected ? 'bg-white/20 border-white/30 text-white hover:bg-white/30' : 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'}`}
                           title="Download"
                         >
                           <Download className="w-3.5 h-3.5" />
                         </a>
                       </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -643,7 +664,9 @@ export default function DeptCustomerDocsExplorer() {
               </div>
 
               <div className="p-8 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center gap-3 shadow-xs">
-                {selectedItem.type === 'submission' || selectedItem.type === 'result' ? (
+                {selectedItem.type === 'response' ? (
+                  <FileText className="w-16 h-16 text-emerald-500" />
+                ) : selectedItem.type === 'submission' || selectedItem.type === 'result' ? (
                   <FileText className="w-16 h-16 text-blue-600" />
                 ) : (
                   <Folder className="w-16 h-16 text-blue-500 fill-blue-500/20" />
@@ -657,8 +680,13 @@ export default function DeptCustomerDocsExplorer() {
               <div className="space-y-3 text-xs border-t border-slate-200 dark:border-slate-800 pt-4">
                 <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Name</span><span className="text-slate-900 dark:text-white font-bold break-all flex-1 text-sm">{selectedItem.name}</span></div>
                 <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Kind</span><span className="text-slate-700 dark:text-slate-300 capitalize font-medium">{selectedItem.type}</span></div>
+                {selectedItem.fileCategory && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">File Category</span><span className="text-slate-700 dark:text-slate-300 font-medium">{selectedItem.fileCategory}</span></div>}
+                {selectedItem.createdAt && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Date</span><span className="text-slate-700 dark:text-slate-300 font-medium">{formatDateTime(selectedItem.createdAt)}</span></div>}
                 {selectedItem.fileSize && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Size</span><span className="text-slate-700 dark:text-slate-300 font-medium">{formatFileSize(selectedItem.fileSize)}</span></div>}
                 {selectedItem.status && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase mb-1">Status</span><StatusBadge status={selectedItem.status} /></div>}
+                {selectedItem.type === 'response' && selectedItem.notes && (
+                  <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Notes</span><span className="text-slate-700 dark:text-slate-300 font-medium text-xs whitespace-pre-wrap">{selectedItem.notes}</span></div>
+                )}
               </div>
 
               <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-auto space-y-2">
