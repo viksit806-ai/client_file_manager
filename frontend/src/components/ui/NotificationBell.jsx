@@ -14,16 +14,33 @@ export default function NotificationBell() {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const abortRef = useRef(null);
 
   const fetchData = () => {
-    notificationAPI.getCount().then(res => setCount(res.data.data.count)).catch(() => {});
-    notificationAPI.getAll().then(res => setNotifications(res.data.data)).catch(() => {});
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const signal = controller.signal;
+
+    notificationAPI.getCount({ signal }).then(res => {
+      if (!signal.aborted) setCount(res.data.data.count);
+    }).catch(err => {
+      if (err?.name !== 'CanceledError' && err?.code !== 'ERR_CANCELED') console.error('Failed to fetch notifications:', err);
+    });
+    notificationAPI.getAll({ signal }).then(res => {
+      if (!signal.aborted) setNotifications(res.data.data);
+    }).catch(err => {
+      if (err?.name !== 'CanceledError' && err?.code !== 'ERR_CANCELED') console.error('Failed to fetch notifications:', err);
+    });
   };
 
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (abortRef.current) abortRef.current.abort();
+    };
   }, []);
 
   useEffect(() => {

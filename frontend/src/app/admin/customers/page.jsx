@@ -27,7 +27,7 @@ export default function CustomersPage() {
     setLoading(true);
     adminAPI.getCustomers({ search, status: '' })
       .then((res) => setCustomers(res.data.data))
-      .catch(console.error)
+      .catch((err) => toast.error(err.response?.data?.message || 'Failed to load customers'))
       .finally(() => setLoading(false));
   };
 

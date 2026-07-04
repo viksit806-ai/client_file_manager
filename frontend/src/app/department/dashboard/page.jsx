@@ -5,12 +5,18 @@ import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import SlaBadge from '@/components/ui/SlaBadge';
 import { formatDateTime, getSlaStatus } from '@/lib/utils';
+import { toast } from 'sonner';
 import { FileText, Clock, RefreshCw, CheckCircle, Ban, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import {
-  PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip
-} from 'recharts';
+import dynamic from 'next/dynamic';
+
+const PieChart = dynamic(() => import('recharts').then(m => m.PieChart), { ssr: false });
+const Pie = dynamic(() => import('recharts').then(m => m.Pie), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(m => m.Cell), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
+const Legend = dynamic(() => import('recharts').then(m => m.Legend), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(m => m.Tooltip), { ssr: false });
 
 
 export default function DeptDashboard() {
@@ -22,11 +28,12 @@ export default function DeptDashboard() {
   useEffect(() => {
     departmentAPI.getDashboard()
       .then(res => setData(res.data.data))
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load dashboard'))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="animate-pulse space-y-4">{[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-200 rounded-lg" />)}</div>;
+  if (!data) return <p className="text-red-500 text-center py-12">Failed to load dashboard</p>;
 
   const totalCompleted = (data?.slaMet || 0) + (data?.slaMissed || 0);
   const slaCompliance = totalCompleted > 0 ? Math.round((data.slaMet / totalCompleted) * 100) : 100;

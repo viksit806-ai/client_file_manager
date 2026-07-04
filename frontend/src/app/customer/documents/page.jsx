@@ -122,7 +122,7 @@ export default function CustomerDocumentsExplorer() {
           setTotalDocs(res.data.data.length);
         }
       })
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load documents'))
       .finally(() => setLoading(false));
   }, [page, limit, searchQuery]);
 

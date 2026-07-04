@@ -24,7 +24,7 @@ export default function CustomerResponseCategoriesPage() {
   useEffect(() => {
     customerAPI.getResponseCategories()
       .then(res => setCategories(res.data.data || []))
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load categories'))
       .finally(() => setLoading(false));
   }, []);
 

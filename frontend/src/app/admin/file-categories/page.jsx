@@ -23,7 +23,7 @@ export default function AdminFileCategoriesPage() {
         setCategories(catRes.data.data);
         setDepartments(deptRes.data.data);
       })
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load file categories'))
       .finally(() => setLoading(false));
   };
 

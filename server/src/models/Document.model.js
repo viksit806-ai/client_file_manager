@@ -119,5 +119,9 @@ documentSchema.virtual('slaStatus').get(function () {
 
 documentSchema.index({ customerId: 1, departmentId: 1 });
 documentSchema.index({ departmentId: 1, status: 1 });
+documentSchema.index({ customerId: 1, status: 1 });
+documentSchema.index({ departmentId: 1, createdAt: -1 });
+documentSchema.index({ direction: 1, departmentId: 1, createdAt: -1 });
+documentSchema.index({ groupId: 1 });
 
 export default mongoose.model('Document', documentSchema);

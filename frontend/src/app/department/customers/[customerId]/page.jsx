@@ -148,7 +148,7 @@ export default function DeptCustomerDocsExplorer() {
         setDocs(docRes.data.data);
         setFileCategories(catRes.data.data);
       })
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load documents'))
       .finally(() => setLoading(false));
   };
 
@@ -156,7 +156,7 @@ export default function DeptCustomerDocsExplorer() {
     setLoadingResponses(true);
     departmentAPI.getResponses({ customerId })
       .then(res => setResponseDocs(res.data.data))
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load responses'))
       .finally(() => setLoadingResponses(false));
   };
 

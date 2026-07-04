@@ -96,8 +96,8 @@ export default function DepartmentSubmissionsPage() {
       setDocs(res.data.data || []);
       setTotal(res.data.pagination?.total || 0);
     } catch (err) {
-      console.error(err);
       setDocs([]);
+      toast.error(err.response?.data?.message || 'Failed to load documents');
     } finally {
       setLoading(false);
     }

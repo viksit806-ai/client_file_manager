@@ -80,7 +80,7 @@ export default function DeptCustomersExplorer() {
     const params = activeFilter !== 'all' ? { filter: activeFilter } : {};
     departmentAPI.getCustomers(params)
       .then(res => setCustomers(res.data.data))
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load customers'))
       .finally(() => setLoading(false));
   }, [activeFilter]);
 

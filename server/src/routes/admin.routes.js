@@ -19,11 +19,12 @@ import {
 } from '../controllers/documentOps.controller.js';
 import auth from '../middleware/auth.js';
 import requireRole from '../middleware/role.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import upload, { validateUploadedFiles } from '../middleware/upload.js';
 
 const router = Router();
 
-router.use(auth, requireRole('super_admin'));
+router.use(auth, requireRole('super_admin'), apiLimiter);
 
 router.get('/dashboard', getDashboard);
 

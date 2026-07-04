@@ -47,8 +47,8 @@ export const authAPI = {
 };
 
 export const notificationAPI = {
-  getAll: () => api.get('/notifications'),
-  getCount: () => api.get('/notifications/count'),
+  getAll: (config) => api.get('/notifications', config),
+  getCount: (config) => api.get('/notifications/count', config),
   dismiss: (id) => api.delete(`/notifications/${id}`),
 };
 
@@ -137,6 +137,6 @@ export const departmentAPI = {
 
 
 export const searchAPI = {
-  globalSearch: (q) => api.get('/search', { params: { q } }),
+  globalSearch: (q, config) => api.get('/search', { params: { q }, ...config }),
 };
 

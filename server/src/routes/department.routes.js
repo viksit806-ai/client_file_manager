@@ -27,11 +27,12 @@ import {
 } from '../controllers/documentOps.controller.js';
 import auth from '../middleware/auth.js';
 import requireRole from '../middleware/role.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import upload, { validateUploadedFiles } from '../middleware/upload.js';
 
 const router = Router();
 
-router.use(auth, requireRole('department'));
+router.use(auth, requireRole('department'), apiLimiter);
 
 router.get('/dashboard', getDashboard);
 router.get('/customers', getCustomers);

@@ -13,6 +13,7 @@ export default function GlobalSearchHeader() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+  const abortRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -32,20 +33,28 @@ export default function GlobalSearchHeader() {
     }
 
     const delayDebounce = setTimeout(async () => {
+      if (abortRef.current) abortRef.current.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       setLoading(true);
       try {
-        const res = await searchAPI.globalSearch(query);
-        if (res.data.success) {
+        const res = await searchAPI.globalSearch(query, { signal: controller.signal });
+        if (!controller.signal.aborted && res.data.success) {
           setResults(res.data.data);
         }
       } catch (err) {
-        console.error('Global search error:', err);
+        if (err?.name !== 'CanceledError' && err?.code !== 'ERR_CANCELED') {
+          console.error('Global search error:', err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, 300);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      clearTimeout(delayDebounce);
+    };
   }, [query]);
 
   const handleSelectResult = (item, type) => {

@@ -5,7 +5,7 @@ import Document from '../models/Document.model.js';
 import AppError from '../utils/AppError.js';
 import crypto from 'crypto';
 
-const generatePassword = () => crypto.randomBytes(4).toString('hex');
+const generatePassword = () => crypto.randomBytes(12).toString('hex');
 
 const SLA_MS = 48 * 60 * 60 * 1000;
 const WARNING_MS = 12 * 60 * 60 * 1000;
@@ -155,6 +155,7 @@ export const resetCustomerPassword = async (req, res) => {
   res.json({
     success: true,
     message: 'Password reset successfully',
+    data: { newPassword },
   });
 };
 
@@ -205,8 +206,22 @@ export const getCustomerDocuments = async (req, res) => {
 };
 
 export const getDepartments = async (req, res) => {
-  const departments = await Department.find().sort({ createdAt: -1 }).lean();
-  res.json({ success: true, data: departments });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  if (page && limit) {
+    const skip = (page - 1) * limit;
+    const total = await Department.countDocuments();
+    const departments = await Department.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
+    res.json({
+      success: true,
+      data: departments,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+    });
+  } else {
+    const departments = await Department.find().sort({ createdAt: -1 }).lean();
+    res.json({ success: true, data: departments });
+  }
 };
 
 export const createDepartment = async (req, res) => {
@@ -262,12 +277,30 @@ export const getDepartmentUsers = async (req, res) => {
   const query = { role: 'department' };
   if (deptId && typeof deptId === 'string') query.departmentId = deptId;
 
-  const users = await User.find(query)
-    .populate('departmentId', 'name')
-    .sort({ createdAt: -1 })
-    .lean();
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
 
-  res.json({ success: true, data: users });
+  if (page && limit) {
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments(query);
+    const users = await User.find(query)
+      .populate('departmentId', 'name')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    res.json({
+      success: true,
+      data: users,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+    });
+  } else {
+    const users = await User.find(query)
+      .populate('departmentId', 'name')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ success: true, data: users });
+  }
 };
 
 export const getDepartmentUsersByDept = async (req, res) => {
@@ -337,7 +370,11 @@ export const resetDeptUserPassword = async (req, res) => {
   user.mustChangePassword = true;
   await user.save();
 
-  res.json({ success: true, message: 'Password reset successfully' });
+  res.json({
+    success: true,
+    message: 'Password reset successfully',
+    data: { newPassword },
+  });
 };
 
 export const setDeptUserPassword = async (req, res) => {
@@ -709,12 +746,30 @@ export const getFileCategories = async (req, res) => {
   const query = {};
   if (deptId && typeof deptId === 'string') query.departmentId = deptId;
 
-  const fileCategories = await FileCategory.find(query)
-    .populate('departmentId', 'name')
-    .sort({ name: 1 })
-    .lean();
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
 
-  res.json({ success: true, data: fileCategories });
+  if (page && limit) {
+    const skip = (page - 1) * limit;
+    const total = await FileCategory.countDocuments(query);
+    const fileCategories = await FileCategory.find(query)
+      .populate('departmentId', 'name')
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    res.json({
+      success: true,
+      data: fileCategories,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+    });
+  } else {
+    const fileCategories = await FileCategory.find(query)
+      .populate('departmentId', 'name')
+      .sort({ name: 1 })
+      .lean();
+    res.json({ success: true, data: fileCategories });
+  }
 };
 
 export const createFileCategory = async (req, res) => {

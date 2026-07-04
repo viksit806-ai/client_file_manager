@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { adminAPI } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { formatDateTime } from '@/lib/utils';
+import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,11 +27,11 @@ export default function CustomerDocumentsPage() {
         items = items.slice(0, 5);
         localStorage.setItem('recent_admin', JSON.stringify(items));
       }
-    }).catch(console.error);
+    }).catch(err => toast.error(err.response?.data?.message || 'Failed to load customer'));
 
     adminAPI.getCustomerDocuments(id)
       .then(res => setDocs(res.data.data))
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load documents'))
       .finally(() => setLoading(false));
   }, [id]);
 

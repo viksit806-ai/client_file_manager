@@ -4,6 +4,7 @@ import { customerAPI } from '@/lib/api';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { formatDateTime } from '@/lib/utils';
+import { toast } from 'sonner';
 import { Clock, RefreshCw, CheckCircle, Ban, Upload, FileText, BarChart3, PieChart as PieIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -18,7 +19,7 @@ export default function CustomerDashboard() {
   useEffect(() => {
     customerAPI.getDocuments()
       .then(res => setDocuments(res.data.data))
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load dashboard'))
       .finally(() => setLoading(false));
   }, []);
 

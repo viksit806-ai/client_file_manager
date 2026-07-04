@@ -29,7 +29,7 @@ export default function CustomerResponsesPage() {
   useEffect(() => {
     customerAPI.getResponses()
       .then(res => setDocs(res.data.data || []))
-      .catch(console.error)
+      .catch(err => toast.error(err.response?.data?.message || 'Failed to load responses'))
       .finally(() => setLoading(false));
   }, []);
 

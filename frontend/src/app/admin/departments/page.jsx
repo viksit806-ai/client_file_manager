@@ -18,7 +18,7 @@ export default function DepartmentsPage() {
 
   const load = () => {
     setLoading(true);
-    adminAPI.getDepartments().then(res => setDepartments(res.data.data)).catch(console.error).finally(() => setLoading(false));
+    adminAPI.getDepartments().then(res => setDepartments(res.data.data)).catch(err => toast.error(err.response?.data?.message || 'Failed to load departments')).finally(() => setLoading(false));
   };
   useEffect(() => {
     Promise.resolve().then(() => {
