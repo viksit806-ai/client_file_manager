@@ -16,9 +16,9 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/department/submissions', label: 'Submissions', icon: FileSearch },
   { href: '/department/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/department/customers', label: 'Customers', icon: Users },
+  { href: '/department/submissions', label: 'Documents', icon: FileSearch },
 ];
 
 export default function DepartmentLayout({ children }) {
