@@ -54,14 +54,14 @@ export default function NotificationBell() {
   const handleDismiss = async (id) => {
     try {
       await notificationAPI.dismiss(id);
-      setNotifications(prev => prev.filter(n => n._id !== id));
+      setNotifications(prev => prev.filter(n => n.id !== id));
       setCount(prev => Math.max(0, prev - 1));
     } catch {}
   };
 
   const handleDismissAll = async () => {
     for (const n of notifications) {
-      try { await notificationAPI.dismiss(n._id); } catch {}
+      try { await notificationAPI.dismiss(n.id); } catch {}
     }
     setNotifications([]);
     setCount(0);
@@ -103,24 +103,24 @@ export default function NotificationBell() {
               notifications.map(n => {
                 const Icon = typeIcons[n.type] || Bell;
                 return (
-                  <div key={n._id} className="group flex items-start gap-3 px-4 py-3 hover:bg-blue-50/50 border-b border-gray-100 last:border-0">
+                  <div key={n.id} className="group flex items-start gap-3 px-4 py-3 hover:bg-blue-50/50 border-b border-gray-100 last:border-0">
                     <div className={`p-1.5 rounded-full shrink-0 ${n.type === 'new_request' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
                       <Icon className="w-3.5 h-3.5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <Link
                         href={n.link || '#'}
-                        onClick={() => { handleDismiss(n._id); setOpen(false); }}
+                        onClick={() => { handleDismiss(n.id); setOpen(false); }}
                         className="text-xs text-gray-800 font-medium hover:text-blue-600 line-clamp-2"
                       >
                         {n.message}
                       </Link>
                       <p className="text-[10px] text-gray-400 mt-0.5">
-                        {new Date(n.createdAt).toLocaleDateString()} {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(n.created_at).toLocaleDateString()} {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                     <button
-                      onClick={() => handleDismiss(n._id)}
+                      onClick={() => handleDismiss(n.id)}
                       className="p-0.5 text-gray-300 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition shrink-0"
                     >
                       <X className="w-3 h-3" />

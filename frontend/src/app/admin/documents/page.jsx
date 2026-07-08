@@ -1193,6 +1193,12 @@ export default function AdminDocumentsExplorer() {
                     <span>Download Document</span>
                   </a>
                 )}
+                {(selectedItem.type === 'file' || selectedItem.type === 'result_file' || selectedItem.type === 'request') && (
+                  <button onClick={handleSoftDeleteClick} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-xl text-xs font-semibold transition mt-2">
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete {selectedItem.type === 'request' ? 'Folder' : 'Document'}</span>
+                  </button>
+                )}
               </div>
             </div>
           ) : (

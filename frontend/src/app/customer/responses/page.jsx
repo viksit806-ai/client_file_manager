@@ -4,6 +4,7 @@ import { customerAPI } from '@/lib/api';
 import { formatDateTime, formatFileSize } from '@/lib/utils';
 import { toast } from 'sonner';
 import { FileText, Download, Filter, Search, X } from 'lucide-react';
+import PaymentModal from '@/components/customer/PaymentModal';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export default function CustomerResponsesPage() {
@@ -13,6 +14,8 @@ export default function CustomerResponsesPage() {
 
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [blockedDoc, setBlockedDoc] = useState(null);
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
   const [filterCat, setFilterCat] = useState(() => searchParams.get('category') || '');
 
@@ -48,6 +51,11 @@ export default function CustomerResponsesPage() {
   }, [docs, search, filterCat]);
 
   const handleDownload = async (doc) => {
+    if (doc.paymentBlocked || doc.status === 'blocked') {
+      setBlockedDoc(doc);
+      setShowPaymentModal(true);
+      return;
+    }
     try {
       const res = await customerAPI.downloadDocument(doc._id, 'submission');
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -136,6 +144,7 @@ export default function CustomerResponsesPage() {
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-green-500 shrink-0" />
                         <span className="font-medium text-gray-800 truncate max-w-[200px]">{doc.title || doc.originalName}</span>
+                        {doc.paymentBlocked && <span className="ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-700 uppercase">Blocked</span>}
                       </div>
                     </td>
                     <td className="py-3 px-4 text-gray-600 text-xs">
@@ -160,6 +169,7 @@ export default function CustomerResponsesPage() {
           </div>
         </div>
       )}
+      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} document={blockedDoc} />}
     </div>
   );
 }

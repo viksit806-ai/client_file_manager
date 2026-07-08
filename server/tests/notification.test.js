@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import { app, Notification, createCustomer, createDeptUser, createDepartment } from './setup.js';
+import { app, NotificationRepo, createCustomer, createDeptUser, createDepartment } from './setup.js';
 
 describe('Notifications', () => {
   it('should return notification count', async () => {
     const customer = await createCustomer({ email: 'notifcount@test.com' });
 
-    await Notification.create({ userId: customer.user._id, type: 'new_response', message: 'Test notification' });
-    await Notification.create({ userId: customer.user._id, type: 'new_response', message: 'Another notification' });
+    await NotificationRepo.create({ user_id: customer.user.id, type: 'new_response', message: 'Test notification' });
+    await NotificationRepo.create({ user_id: customer.user.id, type: 'new_response', message: 'Another notification' });
 
     const res = await request(app)
       .get('/api/notifications/count')
@@ -20,7 +20,7 @@ describe('Notifications', () => {
   it('should list notifications', async () => {
     const customer = await createCustomer({ email: 'notiflist@test.com' });
 
-    await Notification.create({ userId: customer.user._id, type: 'new_response', message: 'Test notification' });
+    await NotificationRepo.create({ user_id: customer.user.id, type: 'new_response', message: 'Test notification' });
 
     const res = await request(app)
       .get('/api/notifications')
@@ -33,15 +33,15 @@ describe('Notifications', () => {
 
   it('should delete a notification', async () => {
     const customer = await createCustomer({ email: 'notifdel@test.com' });
-    const notif = await Notification.create({ userId: customer.user._id, type: 'new_response', message: 'Delete me' });
+    const notif = await NotificationRepo.create({ user_id: customer.user.id, type: 'new_response', message: 'Delete me' });
 
     const res = await request(app)
-      .delete(`/api/notifications/${notif._id}`)
+      .delete(`/api/notifications/${notif.id}`)
       .set('Authorization', `Bearer ${customer.token}`);
 
     expect(res.status).toBe(200);
 
-    const remaining = await Notification.countDocuments({ userId: customer.user._id });
+    const remaining = await NotificationRepo.count({ user_id: customer.user.id });
     expect(remaining).toBe(0);
   });
 
@@ -49,7 +49,7 @@ describe('Notifications', () => {
     const user1 = await createCustomer({ email: 'u1@test.com' });
     const user2 = await createCustomer({ email: 'u2@test.com' });
 
-    await Notification.create({ userId: user1.user._id, type: 'new_response', message: 'User1 notif' });
+    await NotificationRepo.create({ user_id: user1.user.id, type: 'new_response', message: 'User1 notif' });
 
     const res = await request(app)
       .get('/api/notifications')

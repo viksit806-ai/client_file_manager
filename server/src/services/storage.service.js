@@ -1,11 +1,11 @@
 import path from 'path';
 import fs from 'fs';
-import User from '../models/User.model.js';
+import * as ProfileRepo from '../db/profiles.js';
 import supabase from './supabase.service.js';
 
 class StorageService {
   async getCustomerFolderName(customerId) {
-    const customer = await User.findById(customerId);
+    const customer = await ProfileRepo.findByIdLean(customerId);
     if (!customer) return customerId.toString();
     const safeName = customer.name.replace(/[^a-zA-Z0-9]/g, '_');
     const safeEmail = customer.email.replace(/[^a-zA-Z0-9@.]/g, '_');

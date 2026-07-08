@@ -89,6 +89,7 @@ export default function DeptCustomerDocsExplorer() {
   const [responseNotes, setResponseNotes] = useState('');
   const [responseFile, setResponseFile] = useState(null);
   const [creatingResponse, setCreatingResponse] = useState(false);
+  const [showCreateResponseModal, setShowCreateResponseModal] = useState(false);
   const responseFileInputRef = useRef(null);
 
   // Toggle between Requests and Responses view
@@ -141,7 +142,7 @@ export default function DeptCustomerDocsExplorer() {
   const loadData = () => {
     setLoading(true);
     Promise.all([
-      departmentAPI.getCustomerDocuments(customerId),
+      departmentAPI.getCustomerDocuments(customerId, { _t: Date.now() }),
       departmentAPI.getFileCategories()
     ])
       .then(([docRes, catRes]) => {
@@ -173,10 +174,9 @@ export default function DeptCustomerDocsExplorer() {
   }, [selectedItem]);
 
   const getGroupStatus = (groupDocs) => {
-    if (groupDocs.some(d => d.paymentBlocked || d.status === 'blocked')) return 'blocked';
-    if (groupDocs.every(d => d.status === 'completed')) return 'completed';
-    if (groupDocs.some(d => d.status === 'processing')) return 'processing';
-    return 'pending';
+    if (!groupDocs || groupDocs.length === 0) return 'pending';
+    const mainDoc = groupDocs.find(d => d.direction === 'submission') || groupDocs[0];
+    return mainDoc?.status || 'pending';
   };
 
   const navigateToPath = (newPath) => {
@@ -251,6 +251,8 @@ export default function DeptCustomerDocsExplorer() {
   const handleCreateResponse = async () => {
     if (!selectedFileCategory) { toast.error('Please select a file category'); return; }
     if (!responseFile) { toast.error('Please select a file to upload'); return; }
+    const groupId = currentPath[currentPath.length - 1]?.id || currentPath[0]?.id;
+    if (!groupId) { toast.error('Please navigate into a request folder to upload a response'); return; }
     setCreatingResponse(true);
     try {
       const formData = new FormData();
@@ -258,17 +260,101 @@ export default function DeptCustomerDocsExplorer() {
       formData.append('customerId', customerId);
       formData.append('fileCategoryId', selectedFileCategory);
       formData.append('notes', responseNotes);
+      formData.append('groupId', groupId);
       await departmentAPI.createResponse(formData);
       toast.success('Response uploaded successfully');
       setResponseFile(null);
       setSelectedFileCategory('');
       setResponseNotes('');
+      setShowCreateResponseModal(false);
       if (responseFileInputRef.current) responseFileInputRef.current.value = '';
       loadResponses();
+      loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create response');
     } finally {
       setCreatingResponse(false);
+    }
+  };
+
+  const handleDeleteItem = (item) => {
+    setConfirmState({
+      open: true,
+      title: item.type === 'request' ? 'Delete Folder' : 'Delete Document',
+      message: `Are you sure you want to delete "${item.name}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          if (item.type === 'request') {
+            await departmentAPI.deleteGroup(item.id);
+          } else {
+            await departmentAPI.batchDocuments({ ids: [item.id], action: 'delete' });
+          }
+          toast.success(`${item.type === 'request' ? 'Folder' : 'Document'} deleted successfully`);
+          setSelectedItem(null);
+          loadData();
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Failed to delete item');
+        } finally {
+          setConfirmState(s => ({ ...s, open: false }));
+        }
+      }
+    });
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    if (!selectedItem) return;
+    try {
+      let idsToUpdate = [];
+      if (selectedItem.type === 'request') {
+        idsToUpdate = selectedItem.docs.map(d => d._id);
+      } else if (selectedItem.doc) {
+        idsToUpdate = [selectedItem.doc._id];
+      } else {
+        return;
+      }
+      
+      await departmentAPI.batchDocuments({
+        ids: idsToUpdate,
+        action: 'status',
+        status: newStatus,
+        groupId: selectedItem.type === 'request' ? selectedItem.id : undefined
+      });
+      
+      toast.success(`Status updated to ${newStatus}`);
+      loadData();
+      
+      setSelectedItem(prev => ({
+        ...prev,
+        status: newStatus
+      }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update status');
+    }
+  };
+
+  const handleBlockResponse = async () => {
+    if (!selectedItem || selectedItem.type !== 'response' || !selectedItem.doc) return;
+    try {
+      const isBlocked = selectedItem.doc.paymentBlocked;
+      await departmentAPI.batchDocuments({
+        ids: [selectedItem.doc._id],
+        action: isBlocked ? 'unblock' : 'block'
+      });
+      toast.success(isBlocked ? 'Response unblocked' : 'Response blocked');
+      loadData();
+      if (explorerMode === 'responses') loadResponses();
+      
+      setSelectedItem(prev => ({
+        ...prev,
+        doc: {
+          ...prev.doc,
+          paymentBlocked: !isBlocked
+        }
+      }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update block status');
     }
   };
 
@@ -301,10 +387,12 @@ export default function DeptCustomerDocsExplorer() {
 
   const sidebarRequests = Object.entries(groupedRequests).map(([groupId, groupDocs]) => {
     const firstDoc = groupDocs[0];
+    const mainDoc = groupDocs.find(d => d.direction === 'submission') || firstDoc;
     const sla = getSlaStatus(firstDoc.createdAt, getGroupStatus(groupDocs));
     return {
       id: groupId,
       name: firstDoc.customGroupName || formatDateTime(firstDoc.createdAt),
+      description: mainDoc.description,
       itemCount: groupDocs.length,
       slaStatus: sla,
       docs: groupDocs
@@ -325,6 +413,7 @@ export default function DeptCustomerDocsExplorer() {
     explorerItems = sidebarRequests.map(r => ({
       id: r.id,
       name: r.name,
+      description: r.description,
       type: 'request',
       itemCount: r.itemCount,
       status: getGroupStatus(r.docs),
@@ -338,12 +427,14 @@ export default function DeptCustomerDocsExplorer() {
       explorerItems.push({
         id: d._id,
         name: d.title || d.originalName,
-        type: 'submission',
+        type: d.direction === 'response' ? 'response' : 'submission',
+        fileCategory: d.fileCategoryId?.name,
         fileSize: d.fileSize,
         mimeType: d.mimeType,
         status: d.status,
         createdAt: d.createdAt,
         description: d.description,
+        notes: d.notes,
         doc: d
       });
     }
@@ -486,6 +577,11 @@ export default function DeptCustomerDocsExplorer() {
                       <Upload className="w-3.5 h-3.5" /><span>Upload File</span>
                     </button>
                   )}
+                  {currentPath.length >= 1 && (
+                    <button onClick={() => setShowCreateResponseModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-semibold hover:bg-emerald-50 transition shadow-xs">
+                      <FileText className="w-3.5 h-3.5" /><span>Add Response</span>
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -563,61 +659,20 @@ export default function DeptCustomerDocsExplorer() {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto">
-              {/* Create Response Form */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 mb-4">
-                <h3 className="font-bold text-sm mb-3">Upload New Response</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">File Category</label>
-                    <select
-                      value={selectedFileCategory}
-                      onChange={(e) => setSelectedFileCategory(e.target.value)}
-                      className="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                      <option value="">Select a category...</option>
-                      {fileCategories.map(cat => (
-                        <option key={cat._id} value={cat._id}>{cat.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes (optional)</label>
-                    <textarea
-                      value={responseNotes}
-                      onChange={(e) => setResponseNotes(e.target.value)}
-                      placeholder="Add notes about this response..."
-                      rows={2}
-                      className="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">File</label>
-                    <input
-                      ref={responseFileInputRef}
-                      type="file"
-                      onChange={(e) => setResponseFile(e.target.files[0])}
-                      className="w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition"
-                    />
-                  </div>
-                  <button
-                    onClick={handleCreateResponse}
-                    disabled={creatingResponse}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl text-xs font-semibold shadow-xs transition"
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>{creatingResponse ? 'Uploading...' : 'Upload Response'}</span>
-                  </button>
-                </div>
-              </div>
-
               {/* Response Documents List */}
               <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
                 <h3 className="font-bold text-sm mb-3">Response Documents</h3>
                 <div className="space-y-2">
-                  {responseDocs.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-6">No response documents yet</p>
-                  ) : (
-                    responseDocs.map(r => {
+                  {(() => {
+                    const visibleResponses = currentPath.length === 1 
+                      ? responseDocs.filter(r => (r.groupId || r.group_id || r._id) === currentPath[0].id)
+                      : responseDocs;
+                      
+                    if (visibleResponses.length === 0) {
+                      return <p className="text-xs text-slate-400 text-center py-6">No response documents found</p>;
+                    }
+                    
+                    return visibleResponses.map(r => {
                       const isResponseSelected = selectedItem?.id === r._id;
                       return (
                       <div
@@ -644,8 +699,8 @@ export default function DeptCustomerDocsExplorer() {
                         </a>
                       </div>
                       );
-                    })
-                  )}
+                    });
+                  })()}
                 </div>
               </div>
             </div>
@@ -683,7 +738,30 @@ export default function DeptCustomerDocsExplorer() {
                 {selectedItem.fileCategory && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">File Category</span><span className="text-slate-700 dark:text-slate-300 font-medium">{selectedItem.fileCategory}</span></div>}
                 {selectedItem.createdAt && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Date</span><span className="text-slate-700 dark:text-slate-300 font-medium">{formatDateTime(selectedItem.createdAt)}</span></div>}
                 {selectedItem.fileSize && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Size</span><span className="text-slate-700 dark:text-slate-300 font-medium">{formatFileSize(selectedItem.fileSize)}</span></div>}
-                {selectedItem.status && <div><span className="text-slate-400 block font-semibold text-[10px] uppercase mb-1">Status</span><StatusBadge status={selectedItem.status} /></div>}
+                {selectedItem.status && (
+                  <div>
+                    <span className="text-slate-400 block font-semibold text-[10px] uppercase mb-1">Status</span>
+                    {selectedItem.type === 'response' ? (
+                      <StatusBadge status={selectedItem.status} />
+                    ) : (
+                      <select
+                        value={selectedItem.status}
+                        onChange={(e) => handleStatusChange(e.target.value)}
+                        className={`text-xs border rounded-lg px-2.5 py-1.5 outline-none font-semibold capitalize transition-colors ${
+                          selectedItem.status === 'completed'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-500'
+                            : selectedItem.status === 'processing'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-500'
+                            : 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500'
+                        }`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    )}
+                  </div>
+                )}
                 {selectedItem.type === 'response' && selectedItem.notes && (
                   <div><span className="text-slate-400 block font-semibold text-[10px] uppercase">Notes</span><span className="text-slate-700 dark:text-slate-300 font-medium text-xs whitespace-pre-wrap">{selectedItem.notes}</span></div>
                 )}
@@ -698,6 +776,17 @@ export default function DeptCustomerDocsExplorer() {
                     <Download className="w-4 h-4" />
                     <span>Download File</span>
                   </a>
+                )}
+                {selectedItem.type === 'response' && selectedItem.doc && (
+                  <button onClick={handleBlockResponse} className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition ${selectedItem.doc.paymentBlocked ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'}`}>
+                    <span>{selectedItem.doc.paymentBlocked ? 'Unblock Response' : 'Block Response'}</span>
+                  </button>
+                )}
+                {(canDelete || user?.role === 'super_admin') && (
+                  <button onClick={() => handleDeleteItem(selectedItem)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-xl text-xs font-semibold transition mt-2">
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete {selectedItem.type === 'request' ? 'Folder' : 'File'}</span>
+                  </button>
                 )}
               </div>
             </div>
@@ -745,7 +834,65 @@ export default function DeptCustomerDocsExplorer() {
         </div>
       )}
 
+      {/* Create Response Modal */}
+      {showCreateResponseModal && (
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 className="font-bold text-sm text-slate-800 dark:text-white">Upload New Response</h3>
+              <button onClick={() => setShowCreateResponseModal(false)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">File Category</label>
+                <select
+                  value={selectedFileCategory}
+                  onChange={(e) => setSelectedFileCategory(e.target.value)}
+                  className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="">Select a category...</option>
+                  {fileCategories.map(cat => (
+                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Notes (optional)</label>
+                <textarea
+                  value={responseNotes}
+                  onChange={(e) => setResponseNotes(e.target.value)}
+                  placeholder="Add notes about this response..."
+                  rows={3}
+                  className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">File</label>
+                <input
+                  ref={responseFileInputRef}
+                  type="file"
+                  onChange={(e) => setResponseFile(e.target.files[0])}
+                  className="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+              <button onClick={() => setShowCreateResponseModal(false)} className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition">Cancel</button>
+              <button
+                onClick={handleCreateResponse}
+                disabled={creatingResponse || !selectedFileCategory || !responseFile}
+                className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-xs transition"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{creatingResponse ? 'Uploading...' : 'Upload Response'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ConfirmModal isOpen={confirmState.open} onClose={() => setConfirmState(s => ({ ...s, open: false }))} onConfirm={confirmState.onConfirm} title={confirmState.title} message={confirmState.message} confirmText={confirmState.confirmText || 'Confirm'} variant={confirmState.variant} />
+
     </div>
   );
 }

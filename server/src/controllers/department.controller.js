@@ -1,254 +1,217 @@
-import Document from '../models/Document.model.js';
-import User from '../models/User.model.js';
-import Department from '../models/Department.model.js';
-import FileCategory from '../models/FileCategory.model.js';
-import Notification from '../models/Notification.model.js';
+import * as DocumentRepo from '../db/documents.js';
+import * as ProfileRepo from '../db/profiles.js';
+import * as DepartmentRepo from '../db/departments.js';
+import * as FileCategoryRepo from '../db/file_categories.js';
+import * as NotificationRepo from '../db/notifications.js';
 import AppError from '../utils/AppError.js';
+import { mapDoc, mapDocs, mapProfile, mapProfiles } from '../utils/transform.js';
 import storageService from '../services/storage.service.js';
 
-const SLA_MS = 48 * 60 * 60 * 1000;
-const WARNING_MS = 12 * 60 * 60 * 1000;
+// ─── Dashboard ────────────────────────────────────────────
 
 export const getDashboard = async (req, res) => {
   const deptId = req.user.departmentId;
-  const now = new Date();
+  const stats = await DocumentRepo.getDeptDashboardStats(deptId);
 
-  const subFilter = { departmentId: deptId, direction: 'submission' };
-  const [totalDocs, pending, processing, completed, blocked, recentDocs, slaOverdue, slaApproaching, slaWithin, slaMet, slaMissed, customers] = await Promise.all([
-    Document.countDocuments(subFilter),
-    Document.countDocuments({ ...subFilter, status: 'pending' }),
-    Document.countDocuments({ ...subFilter, status: 'processing' }),
-    Document.countDocuments({ ...subFilter, status: 'completed' }),
-    Document.countDocuments({ ...subFilter, status: 'blocked' }),
-    Document.find(subFilter)
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .populate('customerId', 'name email')
-      
-      .lean(),
-    Document.countDocuments({
-      ...subFilter,
-      status: { $in: ['pending', 'processing'] },
-      createdAt: { $lt: new Date(now - SLA_MS) },
-    }),
-    Document.countDocuments({
-      ...subFilter,
-      status: { $in: ['pending', 'processing'] },
-      createdAt: {
-        $gte: new Date(now - SLA_MS),
-        $lt: new Date(now - SLA_MS + WARNING_MS),
-      },
-    }),
-    Document.countDocuments({
-      ...subFilter,
-      status: { $in: ['pending', 'processing'] },
-      createdAt: { $gte: new Date(now - SLA_MS + WARNING_MS) },
-    }),
-    Document.countDocuments({
-      ...subFilter,
-      status: { $in: ['completed', 'blocked'] },
-      'resultFile.uploadedAt': { $exists: true },
-      $expr: {
-        $lte: [
-          { $subtract: ['$resultFile.uploadedAt', '$createdAt'] },
-          SLA_MS,
-        ],
-      },
-    }),
-    Document.countDocuments({
-      ...subFilter,
-      status: { $in: ['completed', 'blocked'] },
-      'resultFile.uploadedAt': { $exists: true },
-      $expr: {
-        $gt: [
-          { $subtract: ['$resultFile.uploadedAt', '$createdAt'] },
-          SLA_MS,
-        ],
-      },
-    }),
-    Document.aggregate([
-      { $match: { departmentId: deptId, direction: 'submission' } },
-      { $group: { _id: '$customerId', totalDocs: { $sum: 1 }, pendingDocs: { $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] } }, lastDoc: { $max: '$createdAt' } } },
-      { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'customer' } },
-      { $unwind: '$customer' },
-      { $sort: { lastDoc: -1 } },
-      { $project: { _id: '$customer._id', name: '$customer.name', email: '$customer.email', totalDocs: 1, pendingDocs: 1, lastDoc: 1 } },
-    ]),
-  ]);
+  const { data: recentDocs } = await DocumentRepo.find(
+    { department_id: deptId, direction: 'submission' },
+    { sort: { created_at: 'desc' }, limit: 10 }
+  );
+
+  // Customers: aggregate by customer from documents
+  const subFilter = { department_id: deptId, direction: 'submission' };
+  const { data: allSubDocs } = await DocumentRepo.find(subFilter, { limit: 10000 });
+  const customerMap = {};
+  for (const doc of allSubDocs) {
+    const cId = doc.customer_id;
+    if (!customerMap[cId]) {
+      customerMap[cId] = { totalDocs: 0, pendingDocs: 0, lastDoc: doc.created_at };
+    }
+    customerMap[cId].totalDocs++;
+    if (doc.status === 'pending') customerMap[cId].pendingDocs++;
+    if (new Date(doc.created_at) > new Date(customerMap[cId].lastDoc)) {
+      customerMap[cId].lastDoc = doc.created_at;
+    }
+  }
+
+  const customers = [];
+  for (const [cId, info] of Object.entries(customerMap)) {
+    const profile = await ProfileRepo.findByIdLean(cId);
+    if (profile) {
+      customers.push({
+        _id: cId,
+        name: profile.name,
+        email: profile.email,
+        totalDocs: info.totalDocs,
+        pendingDocs: info.pendingDocs,
+        lastDoc: info.lastDoc,
+      });
+    }
+  }
+  customers.sort((a, b) => new Date(b.lastDoc) - new Date(a.lastDoc));
 
   res.json({
     success: true,
-    data: { totalDocs, pending, processing, completed, blocked, slaOverdue, slaApproaching, slaWithin, slaMet, slaMissed, recentDocs, customers },
+    data: {
+      ...stats,
+      recentDocs: mapDocs(recentDocs),
+      customers,
+    },
   });
 };
+
+// ─── Customers ────────────────────────────────────────────
 
 export const getCustomers = async (req, res) => {
   const deptId = req.user.departmentId;
   const { filter } = req.query;
 
-  const matchStage = { departmentId: deptId, direction: 'submission' };
+  const slaMs = 48 * 60 * 60 * 1000;
+  const warningMs = 12 * 60 * 60 * 1000;
+  const now = new Date();
+
+  const filters = { department_id: deptId, direction: 'submission' };
   if (filter === 'completed') {
-    matchStage.status = 'completed';
+    filters.status = 'completed';
   } else if (filter === 'non_completed') {
-    matchStage.status = { $in: ['pending', 'processing', 'blocked'] };
+    filters.status = ['pending', 'processing', 'blocked'];
   } else if (filter === 'near_deadline') {
-    const warningMs = 12 * 60 * 60 * 1000;
-    const slaMs = 48 * 60 * 60 * 1000;
-    const now = new Date();
-    matchStage.status = { $in: ['pending', 'processing'] };
-    matchStage.createdAt = {
-      $gte: new Date(now - slaMs),
-      $lt: new Date(now - slaMs + warningMs),
+    filters.status = ['pending', 'processing'];
+    filters.created_at = {
+      $gte: new Date(now - slaMs).toISOString(),
+      $lt: new Date(now - slaMs + warningMs).toISOString(),
     };
   }
 
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
 
+  const { data: docs } = await DocumentRepo.find(filters, { limit: 10000 });
+
+  // Group by customer
+  const customerMap = {};
+  for (const doc of docs) {
+    const cId = doc.customer_id;
+    if (!customerMap[cId]) {
+      customerMap[cId] = { totalDocs: 0, pendingDocs: 0, lastDoc: doc.created_at };
+    }
+    customerMap[cId].totalDocs++;
+    if (doc.status === 'pending') customerMap[cId].pendingDocs++;
+    if (new Date(doc.created_at) > new Date(customerMap[cId].lastDoc)) {
+      customerMap[cId].lastDoc = doc.created_at;
+    }
+  }
+
+  const customerIds = Object.keys(customerMap);
+  const customerProfiles = {};
+  for (const cId of customerIds) {
+    const profile = await ProfileRepo.findByIdLean(cId);
+    if (profile) customerProfiles[cId] = profile;
+  }
+
+  let result = customerIds.map(cId => ({
+    _id: cId,
+    name: customerProfiles[cId]?.name || 'Unknown',
+    email: customerProfiles[cId]?.email || '',
+    totalDocs: customerMap[cId].totalDocs,
+    pendingDocs: customerMap[cId].pendingDocs,
+    lastDoc: customerMap[cId].lastDoc,
+  }));
+
+  result.sort((a, b) => new Date(b.lastDoc) - new Date(a.lastDoc));
+  const total = result.length;
+
   if (page && limit) {
     const skip = (page - 1) * limit;
-    
-    const countRes = await Document.aggregate([
-      { $match: matchStage },
-      { $group: { _id: '$customerId' } },
-      { $count: 'total' }
-    ]);
-    const total = countRes[0]?.total || 0;
-
-    const customers = await Document.aggregate([
-      { $match: matchStage },
-      { $group: { _id: '$customerId', totalDocs: { $sum: 1 }, pendingDocs: { $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] } }, lastDoc: { $max: '$createdAt' } } },
-      { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'customer' } },
-      { $unwind: '$customer' },
-      { $sort: { lastDoc: -1 } },
-      { $skip: skip },
-      { $limit: limit },
-      {
-        $project: {
-          _id: '$customer._id',
-          name: '$customer.name',
-          email: '$customer.email',
-          totalDocs: 1,
-          pendingDocs: 1,
-          lastDoc: 1,
-        },
-      },
-    ]);
-
-    res.json({
-      success: true,
-      data: customers,
-      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
-    });
-  } else {
-    const customers = await Document.aggregate([
-      { $match: matchStage },
-      { $group: { _id: '$customerId', totalDocs: { $sum: 1 }, pendingDocs: { $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] } }, lastDoc: { $max: '$createdAt' } } },
-      { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'customer' } },
-      { $unwind: '$customer' },
-      { $sort: { lastDoc: -1 } },
-      {
-        $project: {
-          _id: '$customer._id',
-          name: '$customer.name',
-          email: '$customer.email',
-          totalDocs: 1,
-          pendingDocs: 1,
-          lastDoc: 1,
-        },
-      },
-    ]);
-
-    res.json({ success: true, data: customers });
+    result = result.slice(skip, skip + limit);
   }
+
+  res.json({
+    success: true,
+    data: result,
+    pagination: page && limit ? { total, page, limit, pages: Math.ceil(total / limit) } : undefined,
+  });
 };
+
+// ─── Customer Documents (department view) ─────────────────
 
 export const getCustomerDocuments = async (req, res) => {
   const deptId = req.user.departmentId;
   const { customerId } = req.params;
+  const filters = { customer_id: customerId, department_id: deptId, direction: 'submission', is_deleted: false };
 
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
-  const query = { customerId, departmentId: deptId, direction: 'submission', isDeleted: { $ne: true } };
+  const options = { sort: { created_at: 'desc' } };
 
   if (page && limit) {
-    const skip = (page - 1) * limit;
-    const total = await Document.countDocuments(query);
-    const docs = await Document.find(query)
-      
-      .populate('resultFile.uploadedBy', 'name')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    options.page = page;
+    options.limit = limit;
+  }
+
+  const { data, count } = await DocumentRepo.find(filters, options);
+
+  if (page && limit) {
     res.json({
       success: true,
-      data: docs,
-      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+      data: mapDocs(data),
+      pagination: { total: count, page, limit, pages: Math.ceil(count / limit) },
     });
   } else {
-    const docs = await Document.find(query)
-      
-      .populate('resultFile.uploadedBy', 'name')
-      .sort({ createdAt: -1 })
-      .lean();
-    res.json({ success: true, data: docs });
+    res.json({ success: true, data: mapDocs(data) });
   }
 };
+
+// ─── Documents ────────────────────────────────────────────
 
 export const getDocuments = async (req, res) => {
   const deptId = req.user.departmentId;
   const { status, customerId, q } = req.query;
-  const query = { departmentId: deptId, direction: 'submission', isDeleted: { $ne: true } };
+  const filters = { department_id: deptId, direction: 'submission', is_deleted: false };
 
-  if (status && typeof status === 'string') query.status = status;
-  if (customerId && typeof customerId === 'string') query.customerId = customerId;
-
-  if (q && typeof q === 'string') {
-    const searchRegex = { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
-    const matchingCustomers = await User.find({
-      role: 'customer',
-      $or: [
-        { name: searchRegex },
-        { email: searchRegex }
-      ]
-    }).select('_id').lean();
-    const customerIds = matchingCustomers.map(c => c._id);
-    query.$or = [
-      { customerId: { $in: customerIds } },
-      { title: searchRegex },
-      { originalName: searchRegex },
-      { customGroupName: searchRegex },
-      { description: searchRegex },
-      { notes: searchRegex },
-    ];
-  }
+  if (status && typeof status === 'string') filters.status = status;
+  if (customerId && typeof customerId === 'string') filters.customer_id = customerId;
 
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
+  const options = { sort: { created_at: 'desc' } };
+
+  if (q && typeof q === 'string') {
+    // Find matching customers
+    const { data: matchingCustomers } = await ProfileRepo.find(
+      { role: 'customer' },
+      { search: { fields: ['name', 'email'], term: q }, limit: 100 }
+    );
+    const customerIds = matchingCustomers.map(c => c.id);
+
+    const orConditions = [
+      `title.ilike.%${q}%`,
+      `original_name.ilike.%${q}%`,
+      `custom_group_name.ilike.%${q}%`,
+      `description.ilike.%${q}%`,
+      `notes.ilike.%${q}%`,
+    ];
+    if (customerIds.length > 0) {
+      orConditions.push(`customer_id.in.(${customerIds.join(',')})`);
+    }
+    filters.or = orConditions.join(',');
+  }
 
   if (page && limit) {
-    const skip = (page - 1) * limit;
-    const total = await Document.countDocuments(query);
-    const docs = await Document.find(query)
-      .populate('customerId', 'name email')
-      .populate('resultFile.uploadedBy', 'name')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    options.page = page;
+    options.limit = limit;
+  }
+
+  const { data, count } = await DocumentRepo.find(filters, options);
+
+  if (page && limit) {
     res.json({
       success: true,
-      data: docs,
-      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+      data: mapDocs(data),
+      pagination: { total: count, page, limit, pages: Math.ceil(count / limit) },
     });
   } else {
-    const docs = await Document.find(query)
-      .populate('customerId', 'name email')
-      .populate('resultFile.uploadedBy', 'name')
-      .sort({ createdAt: -1 })
-      .lean();
-    res.json({ success: true, data: docs });
+    res.json({ success: true, data: mapDocs(data) });
   }
 };
 
@@ -256,30 +219,24 @@ export const getDocumentDetail = async (req, res) => {
   const deptId = req.user.departmentId;
   const { id } = req.params;
 
-  const doc = await Document.findOne({ _id: id, departmentId: deptId })
-    .populate('customerId', 'name email')
-    
-    .populate('resultFile.uploadedBy', 'name');
-
+  const doc = await DocumentRepo.findOne({ id, department_id: deptId });
   if (!doc) throw new AppError('Document not found', 404);
 
-  // If part of a group, fetch all other group documents
   let groupDocs = [];
-  if (doc.groupId) {
-    groupDocs = await Document.find({ groupId: doc.groupId })
-      .populate('customerId', 'name email')
-      
-      .populate('resultFile.uploadedBy', 'name')
-      .sort({ createdAt: 1 })
-      .lean();
+  if (doc.group_id) {
+    const { data } = await DocumentRepo.find(
+      { group_id: doc.group_id },
+      { sort: { created_at: 'asc' } }
+    );
+    groupDocs = mapDocs(data);
   } else {
-    groupDocs = [doc.toJSON()];
+    groupDocs = [mapDoc(doc)];
   }
 
   res.json({
     success: true,
     data: {
-      ...doc.toJSON(),
+      ...mapDoc(doc),
       groupDocs,
     },
   });
@@ -294,24 +251,22 @@ export const updateDocumentStatus = async (req, res) => {
     throw new AppError('Invalid status', 400);
   }
 
-  const doc = await Document.findOne({ _id: id, departmentId: deptId });
+  const doc = await DocumentRepo.findOne({ id, department_id: deptId });
   if (!doc) throw new AppError('Document not found', 404);
 
-  // If part of a group, synchronize status and notes across all files in the group
-  if (doc.groupId) {
-    await Document.updateMany(
-      { groupId: doc.groupId, departmentId: deptId },
-      { status, ...(notes !== undefined && { notes }) }
-    );
-    const updated = await Document.findOne({ _id: id, departmentId: deptId });
-    return res.json({ success: true, data: updated });
+  if (doc.group_id) {
+    const updates = { status };
+    if (notes !== undefined) updates.notes = notes;
+    await DocumentRepo.updateMany({ group_id: doc.group_id, department_id: deptId }, updates);
+    const updated = await DocumentRepo.findById(id);
+    return res.json({ success: true, data: mapDoc(updated) });
   }
 
-  doc.status = status;
-  if (notes !== undefined) doc.notes = notes;
-  await doc.save();
-
-  res.json({ success: true, data: doc });
+  const updates = { status };
+  if (notes !== undefined) updates.notes = notes;
+  await DocumentRepo.update(id, updates);
+  const updated = await DocumentRepo.findById(id);
+  res.json({ success: true, data: mapDoc(updated) });
 };
 
 export const createResponse = async (req, res) => {
@@ -322,141 +277,131 @@ export const createResponse = async (req, res) => {
   if (!fileCategoryId) throw new AppError('File category ID is required', 400);
   if (!req.file) throw new AppError('Response file is required', 400);
 
-  const fileCategory = await FileCategory.findById(fileCategoryId);
-  if (!fileCategory || !fileCategory.isActive) {
+  const fileCategory = await FileCategoryRepo.findById(fileCategoryId);
+  if (!fileCategory || !fileCategory.is_active) {
     throw new AppError('File category not found or inactive', 404);
   }
-  if (fileCategory.departmentId.toString() !== deptId.toString()) {
-    throw new AppError('File category does not belong to this department', 400);
-  }
 
-  const customer = await User.findById(customerId);
+  const customer = await ProfileRepo.findByIdLean(customerId);
   if (!customer) throw new AppError('Customer not found', 404);
 
   const fileInfo = await storageService.saveResponse(req.file, customerId, fileCategoryId);
 
-  const doc = await Document.create({
-    customerId,
-    departmentId: deptId,
-    fileCategoryId,
+  const doc = await DocumentRepo.create({
+    customer_id: customerId,
+    department_id: deptId,
+    file_category_id: fileCategoryId,
     direction: 'response',
     title: req.file.originalname,
     notes: notes || '',
-    ...fileInfo,
+    original_name: fileInfo.originalName,
+    stored_path: fileInfo.storedPath,
+    mime_type: fileInfo.mimeType,
+    file_size: fileInfo.fileSize,
     status: 'completed',
   });
 
   // Notify the customer
-  const dept = await Department.findById(deptId);
-  await Notification.create({
-    userId: customerId,
+  const dept = await DepartmentRepo.findById(deptId);
+  await NotificationRepo.create({
+    user_id: customerId,
     type: 'new_response',
     message: `${dept.name} uploaded a new document: ${fileInfo.originalName}`,
     link: '/customer/responses',
   });
 
-  const populated = await Document.findById(doc._id)
-    .populate('customerId', 'name email')
-    .populate('fileCategoryId', 'name')
-    .populate('departmentId', 'name');
-
-  res.status(201).json({ success: true, data: populated });
+  res.status(201).json({ success: true, data: mapDoc(doc) });
 };
 
 export const getResponses = async (req, res) => {
   const deptId = req.user.departmentId;
   const { customerId } = req.query;
-  const query = { departmentId: deptId, direction: 'response', isDeleted: { $ne: true } };
-  if (customerId) query.customerId = customerId;
+  const filters = { department_id: deptId, direction: 'response', is_deleted: false };
+  if (customerId) filters.customer_id = customerId;
 
-  const docs = await Document.find(query)
-    .populate('customerId', 'name email')
-    .populate('fileCategoryId', 'name')
-    .sort({ createdAt: -1 })
-    .lean();
-
-  res.json({ success: true, data: docs });
+  const { data } = await DocumentRepo.find(filters, { sort: { created_at: 'desc' } });
+  res.json({ success: true, data: mapDocs(data) });
 };
 
 export const getDepartmentFileCategories = async (req, res) => {
   const deptId = req.user.departmentId;
-  const fileCategories = await FileCategory.find({ departmentId: deptId, isActive: true })
-    .sort({ name: 1 })
-    .lean();
-  res.json({ success: true, data: fileCategories });
+  const { data } = await FileCategoryRepo.find(
+    { department_id: deptId, is_active: true },
+    { sort: { name: 'asc' } }
+  );
+  res.json({ success: true, data });
 };
 
 export const blockDocument = async (req, res) => {
   const deptId = req.user.departmentId;
   const { id } = req.params;
 
-  const dept = await Department.findById(deptId);
+  const dept = await DepartmentRepo.findById(deptId);
   if (!dept?.permissions?.blockDocuments) {
     throw new AppError('Your department does not have permission to block documents', 403);
   }
 
-  const doc = await Document.findOne({ _id: id, departmentId: deptId });
+  const doc = await DocumentRepo.findOne({ id, department_id: deptId });
   if (!doc) throw new AppError('Document not found', 404);
 
-  if (doc.groupId) {
-    await Document.updateMany(
-      { groupId: doc.groupId, departmentId: deptId, resultFile: { $exists: true } },
+  if (doc.group_id) {
+    await DocumentRepo.updateMany(
+      { group_id: doc.group_id, department_id: deptId },
       {
-        paymentBlocked: true,
+        payment_blocked: true,
         status: 'blocked',
-        blockedAt: new Date(),
-        blockedBy: req.user._id,
+        blocked_at: new Date().toISOString(),
+        blocked_by: req.user._id,
       }
     );
-    const updated = await Document.findOne({ _id: id, departmentId: deptId });
-    return res.json({ success: true, data: updated });
+    const updated = await DocumentRepo.findById(id);
+    return res.json({ success: true, data: mapDoc(updated) });
   }
 
-  // Only block if this doc has a result file
-  if (!doc.resultFile) throw new AppError('No result file to block', 400);
+  if (!doc.result_file_stored_path) throw new AppError('No result file to block', 400);
 
-  doc.paymentBlocked = true;
-  doc.status = 'blocked';
-  doc.blockedAt = new Date();
-  doc.blockedBy = req.user._id;
-  await doc.save();
+  await DocumentRepo.update(id, {
+    payment_blocked: true,
+    status: 'blocked',
+    blocked_at: new Date().toISOString(),
+    blocked_by: req.user._id,
+  });
 
-  res.json({ success: true, data: doc });
+  const updated = await DocumentRepo.findById(id);
+  res.json({ success: true, data: mapDoc(updated) });
 };
 
 export const unblockDocument = async (req, res) => {
   const deptId = req.user.departmentId;
   const { id } = req.params;
 
-  const dept = await Department.findById(deptId);
+  const dept = await DepartmentRepo.findById(deptId);
   if (!dept?.permissions?.blockDocuments) {
     throw new AppError('Your department does not have permission to unblock documents', 403);
   }
 
-  const doc = await Document.findOne({ _id: id, departmentId: deptId });
+  const doc = await DocumentRepo.findOne({ id, department_id: deptId });
   if (!doc) throw new AppError('Document not found', 404);
 
-  if (doc.groupId) {
-    await Document.updateMany(
-      { groupId: doc.groupId, departmentId: deptId, resultFile: { $exists: true } },
-      {
-        paymentBlocked: false,
-        $unset: { blockedAt: 1, blockedBy: 1 }
-      }
+  if (doc.group_id) {
+    await DocumentRepo.updateMany(
+      { group_id: doc.group_id, department_id: deptId },
+      { payment_blocked: false, blocked_at: null, blocked_by: null }
     );
-    const updated = await Document.findOne({ _id: id, departmentId: deptId });
-    return res.json({ success: true, data: updated });
+    const updated = await DocumentRepo.findById(id);
+    return res.json({ success: true, data: mapDoc(updated) });
   }
 
-  // Only unblock if this doc has a result file
-  if (!doc.resultFile) throw new AppError('No result file to unblock', 400);
+  if (!doc.result_file_stored_path) throw new AppError('No result file to unblock', 400);
 
-  doc.paymentBlocked = false;
-  doc.blockedAt = undefined;
-  doc.blockedBy = undefined;
-  await doc.save();
+  await DocumentRepo.update(id, {
+    payment_blocked: false,
+    blocked_at: null,
+    blocked_by: null,
+  });
 
-  res.json({ success: true, data: doc });
+  const updated = await DocumentRepo.findById(id);
+  res.json({ success: true, data: mapDoc(updated) });
 };
 
 export const updateNotes = async (req, res) => {
@@ -464,40 +409,39 @@ export const updateNotes = async (req, res) => {
   const { id } = req.params;
   const { notes } = req.body;
 
-  const doc = await Document.findOne({ _id: id, departmentId: deptId });
+  const doc = await DocumentRepo.findOne({ id, department_id: deptId });
   if (!doc) throw new AppError('Document not found', 404);
 
-  doc.notes = notes;
-  await doc.save();
-
-  res.json({ success: true, data: doc });
+  await DocumentRepo.update(id, { notes });
+  const updated = await DocumentRepo.findById(id);
+  res.json({ success: true, data: mapDoc(updated) });
 };
 
 export const downloadFile = async (req, res) => {
   const deptId = req.user.departmentId;
   const { id } = req.params;
 
-  const doc = await Document.findOne({ _id: id, departmentId: deptId });
+  const doc = await DocumentRepo.findOne({ id, department_id: deptId });
   if (!doc) throw new AppError('Document not found', 404);
 
   const { type } = req.query;
 
   if (type === 'result') {
-    if (doc.paymentBlocked) {
+    if (doc.payment_blocked) {
       throw new AppError('Result file is blocked until payment is completed.', 403);
     }
-    if (doc.resultFileDeletedFromStorage) {
+    if (doc.result_file_deleted_from_storage) {
       throw new AppError('The requested result file has been purged from storage.', 410);
     }
   }
   if (type !== 'result') {
-    if (doc.fileDeletedFromStorage) {
+    if (doc.file_deleted_from_storage) {
       throw new AppError('The requested submission file has been purged from storage.', 410);
     }
   }
 
-  const filePath = type === 'result' && doc.resultFile ? doc.resultFile.storedPath : doc.storedPath;
-  const fileName = type === 'result' && doc.resultFile ? doc.resultFile.originalName : doc.originalName;
+  const filePath = type === 'result' && doc.result_file_stored_path ? doc.result_file_stored_path : doc.stored_path;
+  const fileName = type === 'result' && doc.result_file_original_name ? doc.result_file_original_name : doc.original_name;
 
   if (!filePath) throw new AppError('File not found', 404);
   const url = await storageService.getDownloadUrl(filePath, fileName);
@@ -510,51 +454,50 @@ export const departmentPurgeDocumentFiles = async (req, res) => {
   const deptId = req.user.departmentId;
   const { id } = req.params;
 
-  const doc = await Document.findOne({ _id: id, departmentId: deptId });
+  const doc = await DocumentRepo.findOne({ id, department_id: deptId });
   if (!doc) throw new AppError('Document not found', 404);
 
   let docsToPurge = [doc];
-  if (doc.groupId) {
-    docsToPurge = await Document.find({ groupId: doc.groupId, departmentId: deptId });
+  if (doc.group_id) {
+    const { data } = await DocumentRepo.find({ group_id: doc.group_id, department_id: deptId });
+    docsToPurge = data;
   }
 
   let totalFilesDeleted = 0;
 
   for (const item of docsToPurge) {
-    let itemModified = false;
-    if (item.storedPath && !item.fileDeletedFromStorage) {
+    const updates = {};
+    if (item.stored_path && !item.file_deleted_from_storage) {
       try {
-        await storageService.deleteFile(item.storedPath);
-        item.fileDeletedFromStorage = true;
-        itemModified = true;
+        await storageService.deleteFile(item.stored_path);
+        updates.file_deleted_from_storage = true;
         totalFilesDeleted++;
       } catch (err) {
-        console.error(`Failed to delete file ${item.storedPath}:`, err);
+        console.error(`Failed to delete file ${item.stored_path}:`, err);
       }
     }
-    if (item.resultFile?.storedPath && !item.resultFileDeletedFromStorage) {
+    if (item.result_file_stored_path && !item.result_file_deleted_from_storage) {
       try {
-        await storageService.deleteFile(item.resultFile.storedPath);
-        item.resultFileDeletedFromStorage = true;
-        itemModified = true;
+        await storageService.deleteFile(item.result_file_stored_path);
+        updates.result_file_deleted_from_storage = true;
         totalFilesDeleted++;
       } catch (err) {
-        console.error(`Failed to delete result file ${item.resultFile.storedPath}:`, err);
+        console.error(`Failed to delete result file ${item.result_file_stored_path}:`, err);
       }
     }
 
-    if (itemModified) {
-      item.purgedAt = new Date();
-      item.purgedBy = req.user._id;
-      await item.save();
+    if (Object.keys(updates).length > 0) {
+      updates.purged_at = new Date().toISOString();
+      updates.purged_by = req.user._id;
+      await DocumentRepo.update(item.id, updates);
     }
   }
 
-  const updatedDoc = await Document.findOne({ _id: id, departmentId: deptId });
+  const updatedDoc = await DocumentRepo.findById(id);
   res.json({
     success: true,
     message: `Successfully purged files across the request group (Deleted ${totalFilesDeleted} files).`,
-    data: updatedDoc
+    data: mapDoc(updatedDoc),
   });
 };
 
@@ -571,14 +514,11 @@ export const renameCustomer = async (req, res) => {
     throw new AppError('Name is required', 400);
   }
 
-  // Verify this customer has documents in this department
-  const doc = await Document.findOne({ customerId, departmentId: deptId });
+  const doc = await DocumentRepo.findOne({ customer_id: customerId, department_id: deptId });
   if (!doc) throw new AppError('Customer not found in your department', 404);
 
-  const updated = await User.findByIdAndUpdate(customerId, { name: name.trim() }, { new: true }).select('name email');
-  if (!updated) throw new AppError('Customer not found', 404);
-
-  res.json({ success: true, data: updated });
+  const updated = await ProfileRepo.update(customerId, { name: name.trim() });
+  res.json({ success: true, data: mapProfile(updated) });
 };
 
 export const departmentBatchDocuments = async (req, res) => {
@@ -593,74 +533,54 @@ export const departmentBatchDocuments = async (req, res) => {
     if (!status || !['pending', 'processing', 'completed', 'blocked'].includes(status)) {
       throw new AppError('Valid status is required', 400);
     }
-    const updatePayload = { status };
-    if (status === 'blocked') {
-      updatePayload.paymentBlocked = true;
-      updatePayload.blockedAt = new Date();
-      updatePayload.blockedBy = req.user._id;
-    } else {
-      updatePayload.paymentBlocked = false;
-    }
 
     for (const id of ids) {
-      const doc = await Document.findOne({ _id: id, departmentId: deptId });
+      const doc = await DocumentRepo.findOne({ id, department_id: deptId });
       if (doc) {
-        if (doc.groupId) {
-          if (status !== 'blocked') {
-            await Document.updateMany(
-              { groupId: doc.groupId, departmentId: deptId },
-              { $set: updatePayload, $unset: { blockedAt: 1, blockedBy: 1 } }
-            );
-          } else {
-            await Document.updateMany({ groupId: doc.groupId, departmentId: deptId }, updatePayload);
-          }
+        const updatePayload = { status };
+        if (status === 'blocked') {
+          updatePayload.payment_blocked = true;
+          updatePayload.blocked_at = new Date().toISOString();
+          updatePayload.blocked_by = req.user._id;
         } else {
-          doc.status = status;
-          if (status === 'blocked') {
-            doc.paymentBlocked = true;
-            doc.blockedAt = new Date();
-            doc.blockedBy = req.user._id;
-          } else {
-            doc.paymentBlocked = false;
-            doc.blockedAt = undefined;
-            doc.blockedBy = undefined;
-          }
-          await doc.save();
+          updatePayload.payment_blocked = false;
+          updatePayload.blocked_at = null;
+          updatePayload.blocked_by = null;
+        }
+
+        if (doc.group_id) {
+          await DocumentRepo.updateMany({ group_id: doc.group_id, department_id: deptId }, updatePayload);
+        } else {
+          await DocumentRepo.update(id, updatePayload);
         }
       }
     }
   } else if (action === 'block') {
     for (const id of ids) {
-      const doc = await Document.findOne({ _id: id, departmentId: deptId });
+      const doc = await DocumentRepo.findOne({ id, department_id: deptId });
       if (doc) {
-        if (doc.groupId) {
-          await Document.updateMany(
-            { groupId: doc.groupId, departmentId: deptId, resultFile: { $exists: true } },
-            { paymentBlocked: true, status: 'blocked', blockedAt: new Date(), blockedBy: req.user._id }
-          );
-        } else if (doc.resultFile) {
-          doc.paymentBlocked = true;
-          doc.status = 'blocked';
-          doc.blockedAt = new Date();
-          doc.blockedBy = req.user._id;
-          await doc.save();
+        const updatePayload = {
+          payment_blocked: true,
+          status: 'blocked',
+          blocked_at: new Date().toISOString(),
+          blocked_by: req.user._id,
+        };
+        if (doc.group_id) {
+          await DocumentRepo.updateMany({ group_id: doc.group_id, department_id: deptId }, updatePayload);
+        } else if (doc.result_file_stored_path) {
+          await DocumentRepo.update(id, updatePayload);
         }
       }
     }
   } else if (action === 'unblock') {
     for (const id of ids) {
-      const doc = await Document.findOne({ _id: id, departmentId: deptId });
+      const doc = await DocumentRepo.findOne({ id, department_id: deptId });
       if (doc) {
-        if (doc.groupId) {
-          await Document.updateMany(
-            { groupId: doc.groupId, departmentId: deptId, resultFile: { $exists: true } },
-            { paymentBlocked: false, $unset: { blockedAt: 1, blockedBy: 1 } }
-          );
-        } else if (doc.resultFile) {
-          doc.paymentBlocked = false;
-          doc.blockedAt = undefined;
-          doc.blockedBy = undefined;
-          await doc.save();
+        const updatePayload = { payment_blocked: false, blocked_at: null, blocked_by: null };
+        if (doc.group_id) {
+          await DocumentRepo.updateMany({ group_id: doc.group_id, department_id: deptId }, updatePayload);
+        } else if (doc.result_file_stored_path) {
+          await DocumentRepo.update(id, updatePayload);
         }
       }
     }
@@ -669,23 +589,25 @@ export const departmentBatchDocuments = async (req, res) => {
       throw new AppError('You do not have permission to delete files or folders', 403);
     }
     for (const id of ids) {
-      const doc = await Document.findOne({ _id: id, departmentId: deptId });
+      const doc = await DocumentRepo.findOne({ id, department_id: deptId });
       if (doc) {
         let docsToPurge = [doc];
-        if (doc.groupId) {
-          docsToPurge = await Document.find({ groupId: doc.groupId });
+        if (doc.group_id) {
+          const { data } = await DocumentRepo.find({ group_id: doc.group_id });
+          docsToPurge = data;
         }
         for (const item of docsToPurge) {
-          if (item.storedPath && !item.fileDeletedFromStorage) {
-            try { await storageService.deleteFile(item.storedPath); } catch (_) {}
+          if (item.stored_path && !item.file_deleted_from_storage) {
+            try { await storageService.deleteFile(item.stored_path); } catch (_) {}
           }
-          if (item.resultFile?.storedPath && !item.resultFileDeletedFromStorage) {
-            try { await storageService.deleteFile(item.resultFile.storedPath); } catch (_) {}
+          if (item.result_file_stored_path && !item.result_file_deleted_from_storage) {
+            try { await storageService.deleteFile(item.result_file_stored_path); } catch (_) {}
           }
-          item.isDeleted = true;
-          item.purgedAt = new Date();
-          item.purgedBy = req.user._id;
-          await item.save();
+          await DocumentRepo.update(item.id, {
+            is_deleted: true,
+            purged_at: new Date().toISOString(),
+            purged_by: req.user._id,
+          });
         }
       }
     }

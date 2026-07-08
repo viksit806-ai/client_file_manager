@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import path from 'path';
 import fs from 'fs';
 import {
-  app, User, Department, Document, Notification,
+  app, DocumentRepo, NotificationRepo,
   createDeptUser, createCustomer, createDepartment, createFileCategory,
 } from './setup.js';
 
@@ -19,14 +19,14 @@ describe('Department - Create Response', () => {
   it('should create a response document', async () => {
     const customer = await createCustomer({ name: 'Resp Customer', email: 'resp@test.com' });
     const dept = await createDepartment();
-    const { token } = await createDeptUser(dept._id);
-    const fileCat = await createFileCategory(dept._id);
+    const { token } = await createDeptUser(dept.id);
+    const fileCat = await createFileCategory(dept.id);
 
     const res = await request(app)
       .post('/api/department/responses')
       .set('Authorization', `Bearer ${token}`)
-      .field('customerId', customer.user._id.toString())
-      .field('fileCategoryId', fileCat._id.toString())
+      .field('customerId', customer.user.id.toString())
+      .field('fileCategoryId', fileCat.id.toString())
       .field('notes', 'Test response notes')
       .attach('file', Buffer.from('test file content'), 'test-response.pdf');
 
@@ -36,20 +36,20 @@ describe('Department - Create Response', () => {
     expect(res.body.data.notes).toBe('Test response notes');
 
     // Verify notification was created for customer
-    const notif = await Notification.findOne({ userId: customer.user._id });
-    expect(notif).not.toBeNull();
-    expect(notif.type).toBe('new_response');
+    const notifications = await NotificationRepo.find({ user_id: customer.user.id });
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].type).toBe('new_response');
   });
 
   it('should require file category', async () => {
     const customer = await createCustomer();
     const dept = await createDepartment();
-    const { token } = await createDeptUser(dept._id);
+    const { token } = await createDeptUser(dept.id);
 
     const res = await request(app)
       .post('/api/department/responses')
       .set('Authorization', `Bearer ${token}`)
-      .field('customerId', customer.user._id.toString())
+      .field('customerId', customer.user.id.toString())
       .attach('file', Buffer.from('test'), 'test.pdf');
 
     expect(res.status).toBe(400);
@@ -58,14 +58,14 @@ describe('Department - Create Response', () => {
   it('should require a file', async () => {
     const customer = await createCustomer();
     const dept = await createDepartment();
-    const { token } = await createDeptUser(dept._id);
-    const fileCat = await createFileCategory(dept._id);
+    const { token } = await createDeptUser(dept.id);
+    const fileCat = await createFileCategory(dept.id);
 
     const res = await request(app)
       .post('/api/department/responses')
       .set('Authorization', `Bearer ${token}`)
-      .field('customerId', customer.user._id.toString())
-      .field('fileCategoryId', fileCat._id.toString());
+      .field('customerId', customer.user.id.toString())
+      .field('fileCategoryId', fileCat.id.toString());
 
     expect(res.status).toBe(400);
   });
@@ -73,15 +73,15 @@ describe('Department - Create Response', () => {
   it('should list responses', async () => {
     const customer = await createCustomer({ email: 'listresp@test.com' });
     const dept = await createDepartment();
-    const { token } = await createDeptUser(dept._id);
-    const fileCat = await createFileCategory(dept._id);
+    const { token } = await createDeptUser(dept.id);
+    const fileCat = await createFileCategory(dept.id);
 
     // Create a response
     await request(app)
       .post('/api/department/responses')
       .set('Authorization', `Bearer ${token}`)
-      .field('customerId', customer.user._id.toString())
-      .field('fileCategoryId', fileCat._id.toString())
+      .field('customerId', customer.user.id.toString())
+      .field('fileCategoryId', fileCat.id.toString())
       .attach('file', Buffer.from('content'), 'doc.pdf');
 
     const res = await request(app)
@@ -97,19 +97,19 @@ describe('Department - Create Response', () => {
     const customer1 = await createCustomer({ email: 'c1@test.com' });
     const customer2 = await createCustomer({ email: 'c2@test.com' });
     const dept = await createDepartment();
-    const { token } = await createDeptUser(dept._id);
-    const fileCat = await createFileCategory(dept._id);
+    const { token } = await createDeptUser(dept.id);
+    const fileCat = await createFileCategory(dept.id);
 
     // Create response for customer1
     await request(app)
       .post('/api/department/responses')
       .set('Authorization', `Bearer ${token}`)
-      .field('customerId', customer1.user._id.toString())
-      .field('fileCategoryId', fileCat._id.toString())
+      .field('customerId', customer1.user.id.toString())
+      .field('fileCategoryId', fileCat.id.toString())
       .attach('file', Buffer.from('content'), 'doc1.pdf');
 
     const res = await request(app)
-      .get(`/api/department/responses?customerId=${customer2.user._id}`)
+      .get(`/api/department/responses?customerId=${customer2.user.id}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);

@@ -14,6 +14,9 @@ export default defineConfig({
       MAX_FILE_SIZE: '52428800',
       MAX_STORAGE_LIMIT: '209715200',
       JWT_EXPIRES_IN: '1h',
+      // Set these to a test Supabase project for integration tests:
+      // SUPABASE_URL: 'https://your-test-project.supabase.co',
+      // SUPABASE_SERVICE_ROLE_KEY: 'your-test-service-role-key',
     },
   },
 });

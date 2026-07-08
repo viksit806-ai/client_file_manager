@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import {
-  app, Document,
+  app,
   createCustomer, createDeptUser, createDepartment, createFileCategory,
 } from './setup.js';
 
@@ -9,15 +9,15 @@ describe('Customer - Responses', () => {
   it('should list own responses', async () => {
     const customer = await createCustomer({ email: 'myresp@test.com' });
     const dept = await createDepartment();
-    const { token: deptToken } = await createDeptUser(dept._id);
-    const fileCat = await createFileCategory(dept._id);
+    const { token: deptToken } = await createDeptUser(dept.id);
+    const fileCat = await createFileCategory(dept.id);
 
     // Dept creates a response for this customer
     await request(app)
       .post('/api/department/responses')
       .set('Authorization', `Bearer ${deptToken}`)
-      .field('customerId', customer.user._id.toString())
-      .field('fileCategoryId', fileCat._id.toString())
+      .field('customerId', customer.user.id.toString())
+      .field('fileCategoryId', fileCat.id.toString())
       .attach('file', Buffer.from('content'), 'resp.pdf');
 
     // Customer fetches own responses
@@ -33,14 +33,14 @@ describe('Customer - Responses', () => {
   it('should show response categories grouped by fileCategory', async () => {
     const customer = await createCustomer({ email: 'catgroup@test.com' });
     const dept = await createDepartment();
-    const { token: deptToken } = await createDeptUser(dept._id);
-    const fileCat = await createFileCategory(dept._id);
+    const { token: deptToken } = await createDeptUser(dept.id);
+    const fileCat = await createFileCategory(dept.id);
 
     await request(app)
       .post('/api/department/responses')
       .set('Authorization', `Bearer ${deptToken}`)
-      .field('customerId', customer.user._id.toString())
-      .field('fileCategoryId', fileCat._id.toString())
+      .field('customerId', customer.user.id.toString())
+      .field('fileCategoryId', fileCat.id.toString())
       .attach('file', Buffer.from('content'), 'resp.pdf');
 
     const res = await request(app)

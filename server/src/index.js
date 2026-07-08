@@ -3,7 +3,6 @@ import connectDB from './config/db.js';
 import app from './app.js';
 
 const requiredVars = [
-  { key: 'MONGODB_URI', name: 'MONGODB_URI' },
   { key: 'JWT_SECRET', name: 'JWT_SECRET' },
   { key: 'SUPABASE_URL', name: 'SUPABASE_URL' },
   { key: 'SUPABASE_SERVICE_ROLE_KEY', name: 'SUPABASE_SERVICE_ROLE_KEY' },

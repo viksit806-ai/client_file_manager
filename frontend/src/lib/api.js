@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -139,4 +139,3 @@ export const departmentAPI = {
 export const searchAPI = {
   globalSearch: (q, config) => api.get('/search', { params: { q }, ...config }),
 };
-

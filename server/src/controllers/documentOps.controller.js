@@ -1,36 +1,34 @@
-import mongoose from 'mongoose';
-import Document from '../models/Document.model.js';
-import AppError from '../utils/AppError.js';
 import fs from 'fs';
 import env from '../config/env.js';
+import * as DocumentRepo from '../db/documents.js';
+import AppError from '../utils/AppError.js';
 import storageService from '../services/storage.service.js';
+import { mapDoc } from '../utils/transform.js';
 
 export const renameDocument = async (req, res) => {
   const { id } = req.params;
   const { name, isResult } = req.body;
   if (!name) throw new AppError('Name is required', 400);
 
-  // Check role permission (admin is always allowed)
   if (req.user.role !== 'super_admin' && !req.user.canRename) {
     throw new AppError('You do not have permission to rename files or folders', 403);
   }
 
-  const query = { _id: id };
-  if (req.user.role === 'customer') query.customerId = req.user._id;
-  if (req.user.role === 'department') query.departmentId = req.user.departmentId;
+  const filters = { id };
+  if (req.user.role === 'customer') filters.customer_id = req.user._id;
+  if (req.user.role === 'department') filters.department_id = req.user.departmentId;
 
-  const doc = await Document.findOne(query);
+  const doc = await DocumentRepo.findOne(filters);
   if (!doc) throw new AppError('Document not found', 404);
 
-  if (isResult && doc.resultFile) {
-    doc.resultFile.originalName = name;
+  if (isResult && doc.result_file_stored_path) {
+    await DocumentRepo.update(id, { result_file_original_name: name });
   } else {
-    doc.title = name;
-    doc.originalName = name;
+    await DocumentRepo.update(id, { title: name, original_name: name });
   }
 
-  await doc.save();
-  res.json({ success: true, data: doc });
+  const updated = await DocumentRepo.findById(id);
+  res.json({ success: true, data: mapDoc(updated) });
 };
 
 export const renameGroup = async (req, res) => {
@@ -42,11 +40,11 @@ export const renameGroup = async (req, res) => {
     throw new AppError('You do not have permission to rename files or folders', 403);
   }
 
-  const query = { groupId };
-  if (req.user.role === 'customer') query.customerId = req.user._id;
-  if (req.user.role === 'department') query.departmentId = req.user.departmentId;
+  const filters = { group_id: groupId };
+  if (req.user.role === 'customer') filters.customer_id = req.user._id;
+  if (req.user.role === 'department') filters.department_id = req.user.departmentId;
 
-  await Document.updateMany(query, { customGroupName: name });
+  await DocumentRepo.updateMany(filters, { custom_group_name: name });
   res.json({ success: true, message: 'Folder renamed successfully' });
 };
 
@@ -58,49 +56,34 @@ export const deleteDocument = async (req, res) => {
     throw new AppError('You do not have permission to delete files or folders', 403);
   }
 
-  const query = { _id: id };
-  if (req.user.role === 'customer') query.customerId = req.user._id;
-  if (req.user.role === 'department') query.departmentId = req.user.departmentId;
+  const filters = { id };
+  if (req.user.role === 'customer') filters.customer_id = req.user._id;
+  if (req.user.role === 'department') filters.department_id = req.user.departmentId;
 
-  const doc = await Document.findOne(query);
+  const doc = await DocumentRepo.findOne(filters);
   if (!doc) throw new AppError('Document not found', 404);
 
-  // Soft delete / Storage purge logic
-  if (isResult && doc.resultFile) {
-    if (doc.resultFile.storedPath && !doc.resultFileDeletedFromStorage) {
-      try {
-        await storageService.deleteFile(doc.resultFile.storedPath);
-      } catch (err) {
-        console.error(`Failed to delete file ${doc.resultFile.storedPath}:`, err);
-      }
-      doc.resultFileDeletedFromStorage = true;
+  const updates = { is_deleted: true, purged_at: new Date().toISOString(), purged_by: req.user._id };
+
+  if (isResult && doc.result_file_stored_path) {
+    if (!doc.result_file_deleted_from_storage) {
+      try { await storageService.deleteFile(doc.result_file_stored_path); } catch (_) {}
+      updates.result_file_deleted_from_storage = true;
     }
-    doc.isDeleted = true;
   } else {
-    if (doc.storedPath && !doc.fileDeletedFromStorage) {
-      try {
-        await storageService.deleteFile(doc.storedPath);
-      } catch (err) {
-        console.error(`Failed to delete file ${doc.storedPath}:`, err);
-      }
-      doc.fileDeletedFromStorage = true;
+    if (doc.stored_path && !doc.file_deleted_from_storage) {
+      try { await storageService.deleteFile(doc.stored_path); } catch (_) {}
+      updates.file_deleted_from_storage = true;
     }
-    if (doc.resultFile?.storedPath && !doc.resultFileDeletedFromStorage) {
-      try {
-        await storageService.deleteFile(doc.resultFile.storedPath);
-      } catch (err) {
-        console.error(`Failed to delete file ${doc.resultFile.storedPath}:`, err);
-      }
-      doc.resultFileDeletedFromStorage = true;
+    if (doc.result_file_stored_path && !doc.result_file_deleted_from_storage) {
+      try { await storageService.deleteFile(doc.result_file_stored_path); } catch (_) {}
+      updates.result_file_deleted_from_storage = true;
     }
-    doc.isDeleted = true;
   }
 
-  doc.purgedAt = new Date();
-  doc.purgedBy = req.user._id;
-  await doc.save();
-
-  res.json({ success: true, message: 'File deleted successfully', data: doc });
+  await DocumentRepo.update(id, updates);
+  const updated = await DocumentRepo.findById(id);
+  res.json({ success: true, message: 'File deleted successfully', data: mapDoc(updated) });
 };
 
 export const deleteGroup = async (req, res) => {
@@ -110,49 +93,35 @@ export const deleteGroup = async (req, res) => {
     throw new AppError('You do not have permission to delete files or folders', 403);
   }
 
-  const query = { groupId };
-  if (req.user.role === 'customer') query.customerId = req.user._id;
-  if (req.user.role === 'department') query.departmentId = req.user.departmentId;
+  const filters = { group_id: groupId };
+  if (req.user.role === 'customer') filters.customer_id = req.user._id;
+  if (req.user.role === 'department') filters.department_id = req.user.departmentId;
 
-  const docs = await Document.find(query);
+  const { data: docs } = await DocumentRepo.find(filters);
   for (const doc of docs) {
-    if (doc.storedPath && !doc.fileDeletedFromStorage) {
-      try {
-        await storageService.deleteFile(doc.storedPath);
-      } catch (err) {
-        console.error(`Failed to delete file ${doc.storedPath}:`, err);
-      }
-      doc.fileDeletedFromStorage = true;
+    const updates = { is_deleted: true, purged_at: new Date().toISOString(), purged_by: req.user._id };
+    if (doc.stored_path && !doc.file_deleted_from_storage) {
+      try { await storageService.deleteFile(doc.stored_path); } catch (_) {}
+      updates.file_deleted_from_storage = true;
     }
-    if (doc.resultFile?.storedPath && !doc.resultFileDeletedFromStorage) {
-      try {
-        await storageService.deleteFile(doc.resultFile.storedPath);
-      } catch (err) {
-        console.error(`Failed to delete file ${doc.resultFile.storedPath}:`, err);
-      }
-      doc.resultFileDeletedFromStorage = true;
+    if (doc.result_file_stored_path && !doc.result_file_deleted_from_storage) {
+      try { await storageService.deleteFile(doc.result_file_stored_path); } catch (_) {}
+      updates.result_file_deleted_from_storage = true;
     }
-    doc.isDeleted = true;
-    doc.purgedAt = new Date();
-    doc.purgedBy = req.user._id;
-    await doc.save();
+    await DocumentRepo.update(doc.id, updates);
   }
 
   res.json({ success: true, message: 'Folder deleted successfully' });
 };
 
-// ─── Create an empty folder (placeholder document) ───────────────────────────
-// Works for super_admin (any customer), dept users with canCreate, customers with canCreate.
 export const createEmptyFolder = async (req, res) => {
   const { folderName, customerId, departmentId } = req.body;
   if (!folderName || !folderName.trim()) throw new AppError('Folder name is required', 400);
 
-  // Permission check
   if (req.user.role !== 'super_admin' && !req.user.canCreate) {
     throw new AppError('You do not have permission to create folders', 403);
   }
 
-  // Resolve effective customerId / departmentId
   const effectiveCustomerId = req.user.role === 'customer'
     ? req.user._id
     : (customerId || null);
@@ -163,68 +132,50 @@ export const createEmptyFolder = async (req, res) => {
   if (!effectiveCustomerId) throw new AppError('Customer ID is required', 400);
   if (!effectiveDepartmentId) throw new AppError('Department ID is required', 400);
 
-  const groupId = new mongoose.Types.ObjectId();
+  const { v4: uuidv4 } = await import('uuid');
+  const groupId = uuidv4();
 
-  const placeholder = await Document.create({
-    customerId: effectiveCustomerId,
-    departmentId: effectiveDepartmentId,
-    groupId,
-    customGroupName: folderName.trim(),
+  const placeholder = await DocumentRepo.create({
+    customer_id: effectiveCustomerId,
+    department_id: effectiveDepartmentId,
+    group_id: groupId,
+    custom_group_name: folderName.trim(),
     title: folderName.trim(),
-    storedPath: null,          // no file – this is a folder placeholder
+    stored_path: null,
     direction: 'submission',
     status: 'pending',
-    requiresResult: false,
-    isPlaceholder: true,       // flag so UI can skip it in file listings
+    requires_result: false,
+    is_placeholder: true,
   });
 
-  res.status(201).json({ success: true, data: placeholder, message: 'Folder created successfully' });
+  res.status(201).json({ success: true, data: mapDoc(placeholder), message: 'Folder created successfully' });
 };
 
-// ─── Upload files into an existing group/folder ───────────────────────────────
-// Accepts groupId param – files are saved under the customer's directory tree.
 export const uploadFilesToFolder = async (req, res) => {
   const { groupId } = req.params;
 
-  // Permission check
   if (req.user.role !== 'super_admin' && !req.user.canCreate) {
     throw new AppError('You do not have permission to upload files', 403);
   }
 
   if (!req.files || req.files.length === 0) throw new AppError('At least one file is required', 400);
 
-  // Resolve group reference to fetch the customerId / departmentId from an existing doc in that group
-  const refDoc = await Document.findOne({ groupId });
+  const refDoc = await DocumentRepo.findOne({ group_id: groupId });
   if (!refDoc) throw new AppError('Folder group not found', 404);
 
-  // Department users can only upload to their own department's groups
-  if (req.user.role === 'department' && refDoc.departmentId?.toString() !== req.user.departmentId?.toString()) {
+  if (req.user.role === 'department' && refDoc.department_id !== req.user.departmentId) {
     throw new AppError('You do not have permission to upload to this folder', 403);
   }
 
-  const effectiveCustomerId = refDoc.customerId;
-  const effectiveDepartmentId = refDoc.departmentId;
+  const effectiveCustomerId = refDoc.customer_id;
+  const effectiveDepartmentId = refDoc.department_id;
 
-  // Storage quota check (sum existing non-deleted docs for this customer)
   const incomingTotal = req.files.reduce((sum, f) => sum + f.size, 0);
-  const storageResult = await Document.aggregate([
-    {
-      $match: {
-        customerId: new mongoose.Types.ObjectId(effectiveCustomerId.toString()),
-        fileDeletedFromStorage: { $ne: true },
-        storedPath: { $ne: null },
-      },
-    },
-    { $group: { _id: null, totalSize: { $sum: '$fileSize' } } },
-  ]);
-  const currentTotal = storageResult[0]?.totalSize || 0;
+  const currentTotal = await DocumentRepo.getCustomerStorage(effectiveCustomerId);
 
   if (currentTotal + incomingTotal > env.MAX_STORAGE_LIMIT) {
-    // Clean up multer temp files
     for (const file of req.files) {
-      if (file.path && fs.existsSync(file.path)) {
-        try { fs.unlinkSync(file.path); } catch (_) {}
-      }
+      if (file.path && fs.existsSync(file.path)) { try { fs.unlinkSync(file.path); } catch (_) {} }
     }
     throw new AppError('Storage quota exceeded. Maximum cumulative storage is 200 MB.', 413);
   }
@@ -237,23 +188,25 @@ export const uploadFilesToFolder = async (req, res) => {
       const fileInfo = await storageService.saveSubmission(file, effectiveCustomerId, effectiveDepartmentId);
       savedFilePaths.push(fileInfo.storedPath);
 
-      const doc = await Document.create({
-        customerId: effectiveCustomerId,
-        departmentId: effectiveDepartmentId,
-        groupId: refDoc.groupId,
-        customGroupName: refDoc.customGroupName,
+      const doc = await DocumentRepo.create({
+        customer_id: effectiveCustomerId,
+        department_id: effectiveDepartmentId,
+        group_id: refDoc.group_id,
+        custom_group_name: refDoc.custom_group_name,
         title: file.originalname,
         direction: 'submission',
         status: 'pending',
-        requiresResult: false,
-        ...fileInfo,
+        requires_result: false,
+        original_name: fileInfo.originalName,
+        stored_path: fileInfo.storedPath,
+        mime_type: fileInfo.mimeType,
+        file_size: fileInfo.fileSize,
       });
       createdDocs.push(doc);
     }
 
     res.status(201).json({ success: true, data: createdDocs, message: 'Files uploaded successfully' });
   } catch (err) {
-    // Rollback saved files (R2 keys)
     for (const fp of savedFilePaths) {
       try { await storageService.deleteFile(fp); } catch (_) {}
     }
@@ -263,4 +216,3 @@ export const uploadFilesToFolder = async (req, res) => {
     throw err;
   }
 };
-

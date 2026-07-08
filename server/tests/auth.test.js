@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import { app, User, createAdmin } from './setup.js';
+import { app, createAdmin } from './setup.js';
 
 describe('Auth', () => {
   describe('POST /api/auth/login', () => {
     it('should login with valid credentials', async () => {
-      const { user } = await createAdmin({ email: 'test@example.com' });
-      const { password } = user;
+      await createAdmin({ email: 'test@example.com' });
 
       const res = await request(app)
         .post('/api/auth/login')

@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   const totalSla = (data.slaOverview || []).reduce((sum, d) => sum + d.overdue + d.approaching + d.withinSla, 0);
   const totalOverdue = (data.slaOverview || []).reduce((sum, d) => sum + d.overdue, 0);
   const totalApproaching = (data.slaOverview || []).reduce((sum, d) => sum + d.approaching, 0);
+  const departmentsWithIssues = (data.slaOverview || []).filter(d => d.overdue > 0).length;
 
   return (
     <div>
@@ -47,56 +48,70 @@ export default function AdminDashboard() {
       </div>
 
       <h2 className="text-lg font-semibold mb-4">SLA Overview (48hr Fulfillment)</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <StatCard title="Total Active Requests" value={totalSla} icon={Clipboard} color="blue" />
+        <StatCard title="Depts w/ Issues" value={departmentsWithIssues} icon={Building2} color="purple" />
         <StatCard title="Overdue" value={totalOverdue} icon={AlertCircle} color="red" />
         <StatCard title="Approaching Deadline" value={totalApproaching} icon={AlertTriangle} color="yellow" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Documents per Department</h2>
-          {data.deptStats?.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.deptStats.map(d => ({ name: d.deptName || 'Unknown', count: d.count }))}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-gray-500 text-center py-8">No documents yet</p>
-          )}
-        </div>
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 className="text-lg font-semibold mb-4">Documents per Department</h2>
+        {data.deptStats?.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data.deptStats.map(d => ({ name: d.deptName || 'Unknown', count: d.count }))}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-gray-500 text-center py-8">No documents yet</p>
+        )}
+      </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">SLA by Department</h2>
-          {data.slaOverview?.length > 0 ? (
-            <div className="space-y-3">
-              {data.slaOverview.map((dept) => {
-                const total = dept.overdue + dept.approaching + dept.withinSla;
-                const compliance = total > 0 ? Math.round((dept.withinSla / total) * 100) : 100;
-                return (
-                  <div key={dept._id} className="flex items-center justify-between p-2 border rounded-lg">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{dept.deptName || 'Unknown'}</p>
-                      <p className="text-xs text-gray-500">{total} active requests</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-red-600 font-medium">{dept.overdue} overdue</span>
-                      <span className="text-yellow-600 font-medium">{dept.approaching} at risk</span>
-                      <span className="text-green-600 font-medium">{compliance}% SLA</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-8">No active requests</p>
-          )}
-        </div>
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 className="text-lg font-semibold mb-4">SLA Compliance by Department</h2>
+        {data.slaOverview?.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50 text-slate-500 uppercase text-xs">
+                <tr>
+                  <th className="px-4 py-3 rounded-tl-lg">Department</th>
+                  <th className="px-4 py-3 text-center">Active Requests</th>
+                  <th className="px-4 py-3 text-center text-green-600">Within SLA</th>
+                  <th className="px-4 py-3 text-center text-yellow-600">Approaching</th>
+                  <th className="px-4 py-3 text-center text-red-600">Overdue</th>
+                  <th className="px-4 py-3 text-center rounded-tr-lg">Compliance %</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {data.slaOverview.map((dept) => {
+                  const total = dept.overdue + dept.approaching + dept.withinSla;
+                  const compliance = total > 0 ? Math.round((dept.withinSla / total) * 100) : 100;
+                  return (
+                    <tr key={dept._id} className="hover:bg-slate-50 transition">
+                      <td className="px-4 py-3 font-medium text-slate-800">{dept.deptName || 'Unknown'}</td>
+                      <td className="px-4 py-3 text-center font-semibold text-slate-600">{total}</td>
+                      <td className="px-4 py-3 text-center font-semibold text-green-600">{dept.withinSla}</td>
+                      <td className="px-4 py-3 text-center font-semibold text-yellow-600">{dept.approaching}</td>
+                      <td className="px-4 py-3 text-center font-semibold text-red-600">{dept.overdue}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${compliance >= 90 ? 'bg-green-100 text-green-700' : compliance >= 75 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                          {compliance}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-8">No active requests</p>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">

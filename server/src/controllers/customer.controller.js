@@ -1,18 +1,18 @@
-import mongoose from 'mongoose';
 import fs from 'fs';
 import env from '../config/env.js';
-import Document from '../models/Document.model.js';
-import Department from '../models/Department.model.js';
-import User from '../models/User.model.js';
-import Notification from '../models/Notification.model.js';
+import * as DocumentRepo from '../db/documents.js';
+import * as DepartmentRepo from '../db/departments.js';
+import * as ProfileRepo from '../db/profiles.js';
+import * as NotificationRepo from '../db/notifications.js';
 import AppError from '../utils/AppError.js';
 import storageService from '../services/storage.service.js';
-import path from 'path';
+import { mapDoc, mapDocs } from '../utils/transform.js';
 
 export const getDepartments = async (req, res) => {
-  const departments = await Department.find({ isActive: true })
-    .sort({ name: 1 })
-    .lean();
+  const { data: departments } = await DepartmentRepo.find(
+    { is_active: true },
+    { sort: { name: 'asc' } }
+  );
   res.json({ success: true, data: departments });
 };
 
@@ -23,7 +23,6 @@ export const uploadDocument = async (req, res) => {
   if (!departmentId) throw new AppError('Department ID is required', 400);
   if (!req.files || req.files.length === 0) throw new AppError('At least one file is required', 400);
 
-  // Validate description word count
   if (description) {
     const wordCount = description.trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > 500) {
@@ -31,52 +30,32 @@ export const uploadDocument = async (req, res) => {
     }
   }
 
-  // Calculate cumulative storage quota and incoming upload size
+  // Calculate cumulative storage quota
   const incomingTotal = req.files.reduce((sum, f) => sum + f.size, 0);
-  const storageResult = await Document.aggregate([
-    {
-      $match: {
-        customerId: new mongoose.Types.ObjectId(customerId),
-        fileDeletedFromStorage: { $ne: true }
-      }
-    },
-    { $group: { _id: null, totalSize: { $sum: '$fileSize' } } }
-  ]);
-  const currentTotal = storageResult[0]?.totalSize || 0;
+  const currentTotal = await DocumentRepo.getCustomerStorage(customerId);
 
   if (currentTotal + incomingTotal > env.MAX_STORAGE_LIMIT) {
-    // Clean up temp files stored by multer in this request
     for (const file of req.files) {
       if (file.path && fs.existsSync(file.path)) {
-        try {
-          fs.unlinkSync(file.path);
-        } catch (err) {
-          console.error(`Failed to delete temp file ${file.path}:`, err);
-        }
+        try { fs.unlinkSync(file.path); } catch (_) {}
       }
     }
     throw new AppError('Storage quota exceeded. Maximum cumulative storage is 200MB.', 413);
   }
 
-  const department = await Department.findById(departmentId);
-  if (!department || !department.isActive) {
-    // Clean up temp files
+  const department = await DepartmentRepo.findById(departmentId);
+  if (!department || !department.is_active) {
     for (const file of req.files) {
       if (file.path && fs.existsSync(file.path)) {
-        try {
-          fs.unlinkSync(file.path);
-        } catch (err) {
-          console.error(`Failed to delete temp file ${file.path}:`, err);
-        }
+        try { fs.unlinkSync(file.path); } catch (_) {}
       }
     }
     throw new AppError('Department not found', 404);
   }
 
-  // Coerce requiresResult to boolean (default: true)
   const reqResult = requiresResult === 'false' || requiresResult === false ? false : true;
-
-  const groupId = new mongoose.Types.ObjectId();
+  const { v4: uuidv4 } = await import('uuid');
+  const groupId = uuidv4();
   const savedFilePaths = [];
 
   try {
@@ -84,49 +63,52 @@ export const uploadDocument = async (req, res) => {
       const fileInfo = await storageService.saveSubmission(file, customerId, departmentId);
       savedFilePaths.push(fileInfo.storedPath);
 
-      await Document.create({
-        customerId,
-        departmentId: department._id,
-        groupId,
-        requiresResult: reqResult,
+      await DocumentRepo.create({
+        customer_id: customerId,
+        department_id: department.id,
+        group_id: groupId,
+        requires_result: reqResult,
         title: file.originalname,
         description: description || '',
         direction: 'submission',
-        ...fileInfo,
+        original_name: fileInfo.originalName,
+        stored_path: fileInfo.storedPath,
+        mime_type: fileInfo.mimeType,
+        file_size: fileInfo.fileSize,
         status: 'pending',
       });
     }
 
-    // Populate department name for all created docs in this batch
-    const populatedDocs = await Document.find({ groupId })
-      .populate('departmentId', 'name');
+    const { data: populatedDocs } = await DocumentRepo.find(
+      { group_id: groupId },
+      { sort: { created_at: 'asc' } }
+    );
 
-    // Notify all department users in this department
-    const deptUsers = await User.find({ departmentId: department._id, role: 'department', isActive: true }).lean();
+    // Notify department users
+    const { data: deptUsers } = await ProfileRepo.find({
+      department_id: department.id,
+      role: 'department',
+      is_active: true,
+    });
+
     const notifications = deptUsers.map(u => ({
-      userId: u._id,
+      user_id: u.id,
       type: 'new_request',
       message: `${req.user.name} submitted a new request to ${department.name}`,
       link: `/department/customers/${customerId}`,
     }));
     if (notifications.length > 0) {
-      await Notification.insertMany(notifications);
+      await NotificationRepo.insertMany(notifications);
     }
 
-    res.status(201).json({ success: true, data: populatedDocs });
+    res.status(201).json({ success: true, data: mapDocs(populatedDocs) });
   } catch (error) {
-    // Clean up any files uploaded to Supabase
     for (const filePath of savedFilePaths) {
       try { await storageService.deleteFile(filePath); } catch (_) {}
     }
-    // Clean up any remaining temp files in multer storage
     for (const file of req.files) {
       if (file.path && fs.existsSync(file.path)) {
-        try {
-          fs.unlinkSync(file.path);
-        } catch (err) {
-          console.error(`Failed to clean up temp file ${file.path}:`, err);
-        }
+        try { fs.unlinkSync(file.path); } catch (_) {}
       }
     }
     throw error;
@@ -135,31 +117,27 @@ export const uploadDocument = async (req, res) => {
 
 export const getDocuments = async (req, res) => {
   const customerId = req.user._id;
-  const query = { customerId, direction: 'submission', isDeleted: { $ne: true } };
+  const filters = { customer_id: customerId, direction: 'submission', is_deleted: false };
 
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
+  const options = { sort: { created_at: 'desc' } };
 
   if (page && limit) {
-    const skip = (page - 1) * limit;
-    const total = await Document.countDocuments(query);
-    const docs = await Document.find(query)
-      .populate('departmentId', 'name')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    options.page = page;
+    options.limit = limit;
+  }
+
+  const { data, count } = await DocumentRepo.find(filters, options);
+
+  if (page && limit) {
     res.json({
       success: true,
-      data: docs,
-      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+      data: mapDocs(data),
+      pagination: { total: count, page, limit, pages: Math.ceil(count / limit) },
     });
   } else {
-    const docs = await Document.find(query)
-      .populate('departmentId', 'name')
-      .sort({ createdAt: -1 })
-      .lean();
-    res.json({ success: true, data: docs });
+    res.json({ success: true, data: mapDocs(data) });
   }
 };
 
@@ -168,26 +146,26 @@ export const downloadDocument = async (req, res) => {
   const { id } = req.params;
   const { type } = req.query;
 
-  const doc = await Document.findOne({ _id: id, customerId });
+  const doc = await DocumentRepo.findOne({ id, customer_id: customerId });
   if (!doc) throw new AppError('Document not found', 404);
 
   if (type === 'result') {
-    if (doc.resultFileDeletedFromStorage) {
+    if (doc.result_file_deleted_from_storage) {
       throw new AppError('The requested result file has been purged from storage to free up space.', 410);
     }
-    if (doc.paymentBlocked) {
+    if (doc.payment_blocked) {
       throw new AppError('Document is blocked. Please contact the firm regarding payment.', 403);
     }
   } else {
-    if (doc.fileDeletedFromStorage) {
+    if (doc.file_deleted_from_storage) {
       throw new AppError('The requested submission file has been purged from storage to free up space.', 410);
     }
   }
 
-  const filePath = type === 'result' && doc.resultFile ? doc.resultFile.storedPath : doc.storedPath;
+  const filePath = type === 'result' && doc.result_file_stored_path ? doc.result_file_stored_path : doc.stored_path;
   if (!filePath) throw new AppError('File not found', 404);
 
-  const fileName = type === 'result' && doc.resultFile ? doc.resultFile.originalName : doc.originalName;
+  const fileName = type === 'result' && doc.result_file_original_name ? doc.result_file_original_name : doc.original_name;
   const url = await storageService.getDownloadUrl(filePath, fileName);
   if (!url) throw new AppError('File not found on storage', 404);
 
@@ -197,43 +175,37 @@ export const downloadDocument = async (req, res) => {
 export const getResponses = async (req, res) => {
   const customerId = req.user._id;
   const { fileCategoryId } = req.query;
-  const query = { customerId, direction: 'response', isDeleted: { $ne: true } };
-  if (fileCategoryId && typeof fileCategoryId === 'string') query.fileCategoryId = fileCategoryId;
+  const filters = { customer_id: customerId, direction: 'response', is_deleted: false };
+  if (fileCategoryId && typeof fileCategoryId === 'string') filters.file_category_id = fileCategoryId;
 
-  const docs = await Document.find(query)
-    .populate('fileCategoryId', 'name')
-    .populate('departmentId', 'name')
-    .sort({ createdAt: -1 })
-    .lean();
-
-  res.json({ success: true, data: docs });
+  const { data } = await DocumentRepo.find(filters, { sort: { created_at: 'desc' } });
+  res.json({ success: true, data: mapDocs(data) });
 };
 
 export const getResponseCategories = async (req, res) => {
   const customerId = req.user._id;
 
-  const docs = await Document.find({
-    customerId, direction: 'response', isDeleted: { $ne: true },
-    fileCategoryId: { $ne: null },
-  })
-    .populate('fileCategoryId', 'name')
-    .populate('departmentId', 'name')
-    .sort({ createdAt: -1 })
-    .lean();
+  const { data: docs } = await DocumentRepo.find(
+    {
+      customer_id: customerId,
+      direction: 'response',
+      is_deleted: false,
+    },
+    { sort: { created_at: 'desc' }, limit: 10000 }
+  );
 
   const grouped = {};
   for (const doc of docs) {
-    const fcId = doc.fileCategoryId?._id?.toString();
-    if (!fcId) continue;
-    if (!grouped[fcId]) {
-      grouped[fcId] = {
-        _id: doc.fileCategoryId._id,
-        name: doc.fileCategoryId.name,
-        departmentName: doc.departmentId?.name || 'General',
+    if (!doc.file_category_id) continue;
+    if (!grouped[doc.file_category_id]) {
+      grouped[doc.file_category_id] = {
+        _id: doc.file_category_id,
+        name: doc.file_category?.name || 'Unknown',
+        departmentName: doc.department?.name || 'General',
         documents: [],
       };
     }
-    grouped[fcId].documents.push(doc);
+    grouped[doc.file_category_id].documents.push(mapDoc(doc));
   }
 
   res.json({ success: true, data: Object.values(grouped) });

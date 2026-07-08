@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Folder,
 } from 'lucide-react';
+import PaymentModal from '@/components/customer/PaymentModal';
 
 export default function CustomerResponseCategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -20,6 +21,8 @@ export default function CustomerResponseCategoriesPage() {
   const [selectedCat, setSelectedCat] = useState(null);
   const [sortField, setSortField] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [blockedDoc, setBlockedDoc] = useState(null);
 
   useEffect(() => {
     customerAPI.getResponseCategories()
@@ -29,6 +32,11 @@ export default function CustomerResponseCategoriesPage() {
   }, []);
 
   const handleDownload = async (doc) => {
+    if (doc.paymentBlocked || doc.status === 'blocked') {
+      setBlockedDoc(doc);
+      setShowPaymentModal(true);
+      return;
+    }
     try {
       const res = await customerAPI.downloadDocument(doc._id, 'submission');
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -115,7 +123,10 @@ export default function CustomerResponseCategoriesPage() {
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <FileText className="w-4 h-4 text-green-500 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{doc.title || doc.originalName}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-800 truncate">{doc.title || doc.originalName}</p>
+                        {doc.paymentBlocked && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-700 uppercase">Blocked</span>}
+                      </div>
                       <p className="text-[10px] text-gray-400">
                         {formatDateTime(doc.createdAt)}
                         {doc.fileSize ? ` • ${formatFileSize(doc.fileSize)}` : ''}
@@ -179,6 +190,7 @@ export default function CustomerResponseCategoriesPage() {
           ))}
         </div>
       )}
+      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} document={blockedDoc} />}
     </div>
   );
 }
