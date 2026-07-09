@@ -5,6 +5,7 @@ import { formatDateTime, formatFileSize } from '@/lib/utils';
 import { toast } from 'sonner';
 import { FileText, Download, Filter, Search, X } from 'lucide-react';
 import PaymentModal from '@/components/customer/PaymentModal';
+import Pagination from '@/components/ui/Pagination';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export default function CustomerResponsesPage() {
@@ -18,6 +19,8 @@ export default function CustomerResponsesPage() {
   const [blockedDoc, setBlockedDoc] = useState(null);
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
   const [filterCat, setFilterCat] = useState(() => searchParams.get('category') || '');
+  const [page, setPage] = useState(() => parseInt(searchParams.get('page')) || 1);
+  const [pages, setPages] = useState(1);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -30,11 +33,20 @@ export default function CustomerResponsesPage() {
 
 
   useEffect(() => {
-    customerAPI.getResponses()
-      .then(res => setDocs(res.data.data || []))
+    customerAPI.getResponses({ page, limit: 10 })
+      .then(res => {
+        setDocs(res.data.data || []);
+        if (res.data.pagination) {
+          setPages(res.data.pagination.pages);
+        }
+      })
       .catch(err => toast.error(err.response?.data?.message || 'Failed to load responses'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterCat]);
 
   const fileCategories = useMemo(() => {
     const cats = new Set();
@@ -169,6 +181,7 @@ export default function CustomerResponsesPage() {
           </div>
         </div>
       )}
+      {pages > 1 && <div className="mt-4"><Pagination page={page} pages={pages} onPageChange={setPage} /></div>}
       {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} document={blockedDoc} />}
     </div>
   );

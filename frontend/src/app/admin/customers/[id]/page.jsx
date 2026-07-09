@@ -7,12 +7,15 @@ import { formatDateTime } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import Pagination from '@/components/ui/Pagination';
 
 export default function CustomerDocumentsPage() {
   const { id } = useParams();
   const [customer, setCustomer] = useState(null);
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
 
   useEffect(() => {
     if (!id) return;
@@ -29,11 +32,16 @@ export default function CustomerDocumentsPage() {
       }
     }).catch(err => toast.error(err.response?.data?.message || 'Failed to load customer'));
 
-    adminAPI.getCustomerDocuments(id)
-      .then(res => setDocs(res.data.data))
+    adminAPI.getCustomerDocuments(id, { page, limit: 10 })
+      .then(res => {
+        setDocs(res.data.data);
+        if (res.data.pagination) {
+          setPages(res.data.pagination.pages);
+        }
+      })
       .catch(err => toast.error(err.response?.data?.message || 'Failed to load documents'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, page]);
 
   if (loading) return <div className="animate-pulse h-64 bg-gray-200 rounded-lg" />;
 
@@ -80,6 +88,8 @@ export default function CustomerDocumentsPage() {
           </tbody>
         </table>
       </div>
+
+      {pages > 1 && <div className="mt-4"><Pagination page={page} pages={pages} onPageChange={setPage} /></div>}
     </div>
   );
 }

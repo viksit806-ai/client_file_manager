@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { customerAPI } from '@/lib/api';
 import { toast } from 'sonner';
-import { Upload as UploadIcon } from 'lucide-react';
+import { Upload as UploadIcon, Loader2 } from 'lucide-react';
 
 export default function CustomerUploadPage() {
   const [departments, setDepartments] = useState([]);
@@ -243,7 +243,7 @@ export default function CustomerUploadPage() {
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
           >
             <UploadIcon className="w-4 h-4" />
-            {uploading ? `Uploading (${progress}%)` : 'Submit Request'}
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading ({progress}%)</> : 'Submit Request'}
           </button>
         </form>
       </div>

@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '@/lib/api';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, FolderOpen, X, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderOpen, X, Save, Loader2 } from 'lucide-react';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function AdminFileCategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -12,6 +13,7 @@ export default function AdminFileCategoriesPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', description: '', departmentId: '' });
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null, loading: false });
 
   const loadData = () => {
     setLoading(true);
@@ -64,14 +66,20 @@ export default function AdminFileCategoriesPage() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this file category?')) return;
+  const handleDelete = (id) => {
+    setConfirmDelete({ open: true, id });
+  };
+
+  const confirmDeleteCategory = async () => {
+    setConfirmDelete(s => ({ ...s, loading: true }));
     try {
-      await adminAPI.deleteFileCategory(id);
+      await adminAPI.deleteFileCategory(confirmDelete.id);
       toast.success('File category deleted');
       loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete');
+    } finally {
+      setConfirmDelete({ open: false, id: null, loading: false });
     }
   };
 
@@ -132,7 +140,7 @@ export default function AdminFileCategoriesPage() {
           </div>
           <div className="flex gap-2 pt-1">
             <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
-              <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
+              <Save className="w-4 h-4" /> {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save'}
             </button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-blue-50">Cancel</button>
           </div>
@@ -180,6 +188,7 @@ export default function AdminFileCategoriesPage() {
           </div>
         </div>
       )}
+      <ConfirmModal isOpen={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null, loading: false })} onConfirm={confirmDeleteCategory} title="Delete File Category?" message="Are you sure you want to delete this file category?" confirmText="Delete" confirmLoading={confirmDelete.loading} variant="danger" />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { adminAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
-import { Plus, Pencil, Trash2, RefreshCw, UserCog } from 'lucide-react';
+import { Plus, Pencil, Trash2, RefreshCw, UserCog, Loader2 } from 'lucide-react';
 import { formatDate, copyToClipboard } from '@/lib/utils';
 import Link from 'next/link';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -20,6 +20,7 @@ export default function DepartmentUsersPage() {
   const [newPassword, setNewPassword] = useState(null);
   const [passwordMode, setPasswordMode] = useState('auto');
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
+  const [confirmResetPwd, setConfirmResetPwd] = useState({ open: false, id: null, loading: false });
 
   const load = async () => {
     setLoading(true);
@@ -82,13 +83,20 @@ export default function DepartmentUsersPage() {
     setConfirmDelete({ open: true, id });
   };
 
-  const handleResetPassword = async (id) => {
+  const handleResetPassword = (id) => {
+    setConfirmResetPwd({ open: true, id });
+  };
+
+  const confirmResetPassword = async () => {
+    setConfirmResetPwd(s => ({ ...s, loading: true }));
     try {
-      const res = await adminAPI.resetDeptUserPassword(id);
+      const res = await adminAPI.resetDeptUserPassword(confirmResetPwd.id);
       setNewPassword(res.data.data.plainPassword);
       toast.success('Password reset');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to reset');
+    } finally {
+      setConfirmResetPwd({ open: false, id: null, loading: false });
     }
   };
 
@@ -234,14 +242,16 @@ export default function DepartmentUsersPage() {
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => { setShowModal(false); setNewPassword(null); }} className="px-4 py-2 border rounded-lg text-sm">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
-              {saving ? 'Saving...' : editUser ? 'Update' : 'Create'}
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editUser ? 'Update' : 'Create'}
             </button>
           </div>
         </form>
       </Modal>
 
       <ConfirmModal isOpen={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null })} onConfirm={async () => { await adminAPI.deleteDepartmentUser(confirmDelete.id); toast.success('User deleted'); load(); setConfirmDelete({ open: false, id: null }); }} title="Delete User" message="Delete this user?" confirmText="Delete" variant="danger" />
+
+      <ConfirmModal isOpen={confirmResetPwd.open} onClose={() => setConfirmResetPwd({ open: false, id: null, loading: false })} onConfirm={confirmResetPassword} title="Reset User Password?" message="This will generate a new random password. The user will need the new password to log in." confirmText="Reset" confirmLoading={confirmResetPwd.loading} variant="warning" />
     </div>
   );
 }

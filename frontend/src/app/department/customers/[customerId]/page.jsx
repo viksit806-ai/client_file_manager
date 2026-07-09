@@ -37,6 +37,7 @@ import {
   FolderPlus,
   Eye,
   SlidersHorizontal,
+  Loader2,
 } from 'lucide-react';
 
 export default function DeptCustomerDocsExplorer() {
@@ -303,59 +304,66 @@ export default function DeptCustomerDocsExplorer() {
     });
   };
 
-  const handleStatusChange = async (newStatus) => {
+  const handleStatusChange = (newStatus) => {
     if (!selectedItem) return;
-    try {
-      let idsToUpdate = [];
-      if (selectedItem.type === 'request') {
-        idsToUpdate = selectedItem.docs.map(d => d._id);
-      } else if (selectedItem.doc) {
-        idsToUpdate = [selectedItem.doc._id];
-      } else {
-        return;
+    setConfirmState({
+      open: true,
+      title: `Change Status to ${newStatus}?`,
+      message: `Update all documents in this selection to "${newStatus}".`,
+      variant: 'warning',
+      onConfirm: async () => {
+        try {
+          let idsToUpdate = [];
+          if (selectedItem.type === 'request') {
+            idsToUpdate = selectedItem.docs.map(d => d._id);
+          } else if (selectedItem.doc) {
+            idsToUpdate = [selectedItem.doc._id];
+          } else {
+            return;
+          }
+          await departmentAPI.batchDocuments({
+            ids: idsToUpdate,
+            action: 'status',
+            status: newStatus,
+            groupId: selectedItem.type === 'request' ? selectedItem.id : undefined
+          });
+          toast.success(`Status updated to ${newStatus}`);
+          loadData();
+          setSelectedItem(prev => ({ ...prev, status: newStatus }));
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Failed to update status');
+        } finally {
+          setConfirmState(s => ({ ...s, open: false }));
+        }
       }
-      
-      await departmentAPI.batchDocuments({
-        ids: idsToUpdate,
-        action: 'status',
-        status: newStatus,
-        groupId: selectedItem.type === 'request' ? selectedItem.id : undefined
-      });
-      
-      toast.success(`Status updated to ${newStatus}`);
-      loadData();
-      
-      setSelectedItem(prev => ({
-        ...prev,
-        status: newStatus
-      }));
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update status');
-    }
+    });
   };
 
-  const handleBlockResponse = async () => {
+  const handleBlockResponse = () => {
     if (!selectedItem || selectedItem.type !== 'response' || !selectedItem.doc) return;
-    try {
-      const isBlocked = selectedItem.doc.paymentBlocked;
-      await departmentAPI.batchDocuments({
-        ids: [selectedItem.doc._id],
-        action: isBlocked ? 'unblock' : 'block'
-      });
-      toast.success(isBlocked ? 'Response unblocked' : 'Response blocked');
-      loadData();
-      if (explorerMode === 'responses') loadResponses();
-      
-      setSelectedItem(prev => ({
-        ...prev,
-        doc: {
-          ...prev.doc,
-          paymentBlocked: !isBlocked
+    const isBlocked = selectedItem.doc.paymentBlocked;
+    setConfirmState({
+      open: true,
+      title: isBlocked ? 'Unblock Response?' : 'Block Response?',
+      message: isBlocked ? 'Allow the customer to download this response document.' : 'Prevent the customer from downloading this response document until payment.',
+      variant: 'warning',
+      onConfirm: async () => {
+        try {
+          await departmentAPI.batchDocuments({
+            ids: [selectedItem.doc._id],
+            action: isBlocked ? 'unblock' : 'block'
+          });
+          toast.success(isBlocked ? 'Response unblocked' : 'Response blocked');
+          loadData();
+          if (explorerMode === 'responses') loadResponses();
+          setSelectedItem(prev => ({ ...prev, doc: { ...prev.doc, paymentBlocked: !isBlocked } }));
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Failed to update block status');
+        } finally {
+          setConfirmState(s => ({ ...s, open: false }));
         }
-      }));
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update block status');
-    }
+      }
+    });
   };
 
   // Keyboard shortcuts
@@ -884,7 +892,7 @@ export default function DeptCustomerDocsExplorer() {
                 className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-xs transition"
               >
                 <Upload className="w-4 h-4" />
-                <span>{creatingResponse ? 'Uploading...' : 'Upload Response'}</span>
+                <span>{creatingResponse ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</> : 'Upload Response'}</span>
               </button>
             </div>
           </div>

@@ -4,11 +4,12 @@ import { adminAPI } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
-import { Plus, Search, Eye, Trash2, RefreshCw, Pencil, Users } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, RefreshCw, Pencil, Users, Loader2 } from 'lucide-react';
 import { formatDate, copyToClipboard } from '@/lib/utils';
 import Link from 'next/link';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import SkeletonTable from '@/components/ui/SkeletonTable';
+import Pagination from '@/components/ui/Pagination';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
@@ -21,12 +22,20 @@ export default function CustomersPage() {
   const [newPassword, setNewPassword] = useState(null);
   const [passwordMode, setPasswordMode] = useState('auto');
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
+  const [confirmResetPwd, setConfirmResetPwd] = useState({ open: false, id: null, loading: false });
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
   const router = useRouter();
 
   const loadCustomers = () => {
     setLoading(true);
-    adminAPI.getCustomers({ search, status: '' })
-      .then((res) => setCustomers(res.data.data))
+    adminAPI.getCustomers({ search, page, limit: 10 })
+      .then((res) => {
+        setCustomers(res.data.data);
+        if (res.data.pagination) {
+          setPages(res.data.pagination.pages);
+        }
+      })
       .catch((err) => toast.error(err.response?.data?.message || 'Failed to load customers'))
       .finally(() => setLoading(false));
   };
@@ -36,7 +45,11 @@ export default function CustomersPage() {
       loadCustomers();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [search, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -79,13 +92,20 @@ export default function CustomersPage() {
     setConfirmDelete({ open: true, id });
   };
 
-  const handleResetPassword = async (id) => {
+  const handleResetPassword = (id) => {
+    setConfirmResetPwd({ open: true, id });
+  };
+
+  const confirmResetPassword = async () => {
+    setConfirmResetPwd(s => ({ ...s, loading: true }));
     try {
-      const res = await adminAPI.resetPassword(id);
+      const res = await adminAPI.resetPassword(confirmResetPwd.id);
       setNewPassword(res.data.data.plainPassword);
       toast.success('Password reset');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to reset');
+    } finally {
+      setConfirmResetPwd({ open: false, id: null, loading: false });
     }
   };
 
@@ -112,11 +132,6 @@ export default function CustomersPage() {
     setShowModal(true);
     setNewPassword(null);
   };
-
-  const filtered = customers.filter(c =>
-    c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.email?.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <div>
@@ -154,11 +169,11 @@ export default function CustomersPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {loading ? (
+              {loading ? (
               <tr><td colSpan={5} className="text-center py-8 text-gray-500"><SkeletonTable rows={5} cols={5} /></td></tr>
-            ) : filtered.length === 0 ? (
+            ) : customers.length === 0 ? (
               <tr><td colSpan={5}><div className="flex flex-col items-center py-12 text-gray-400"><Users className="w-12 h-12 mb-3 text-gray-300" /><p className="text-sm font-medium">No customers yet</p><p className="text-xs mt-1">Click "Add Customer" to get started</p></div></td></tr>
-            ) : filtered.map((c) => (
+            ) : customers.map((c) => (
               <tr key={c._id} className="hover:bg-blue-50/50">
                 <td className="px-4 py-3 font-medium">{c.name}</td>
                 <td className="px-4 py-3 text-gray-600">{c.email}</td>
@@ -189,6 +204,8 @@ export default function CustomersPage() {
           </tbody>
         </table>
       </div>
+
+      {pages > 1 && <Pagination page={page} pages={pages} onPageChange={setPage} />}
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setNewPassword(null); }} title={editCustomer ? 'Edit Customer' : 'Create Customer'}>
         <form onSubmit={handleSave} className="space-y-4">
@@ -240,14 +257,16 @@ export default function CustomersPage() {
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => { setShowModal(false); setNewPassword(null); }} className="px-4 py-2 border rounded-lg text-sm">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
-              {saving ? 'Saving...' : editCustomer ? 'Update' : 'Create'}
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editCustomer ? 'Update' : 'Create'}
             </button>
           </div>
         </form>
       </Modal>
 
       <ConfirmModal isOpen={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null })} onConfirm={async () => { await adminAPI.deleteCustomer(confirmDelete.id); toast.success('Customer deleted'); loadCustomers(); setConfirmDelete({ open: false, id: null }); }} title="Delete Customer" message="Delete this customer and all their documents?" confirmText="Delete" variant="danger" />
+
+      <ConfirmModal isOpen={confirmResetPwd.open} onClose={() => setConfirmResetPwd({ open: false, id: null, loading: false })} onConfirm={confirmResetPassword} title="Reset Customer Password?" message="This will generate a new random password. The customer will need the new password to log in." confirmText="Reset" confirmLoading={confirmResetPwd.loading} variant="warning" />
 
     </div>
   );

@@ -91,6 +91,7 @@ export const adminAPI = {
   uploadFilesToFolder: (groupId, formData) => api.post(`/admin/documents/group/${groupId}/upload`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
+  batchDocuments: (data) => api.post('/admin/documents/batch', data),
 };
 
 export const customerAPI = {

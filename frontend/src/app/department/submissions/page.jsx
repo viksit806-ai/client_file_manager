@@ -7,9 +7,10 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'sonner';
 
 import {
-  Search, X, Filter, FileText, ChevronLeft, ChevronRight,
-  Clock, AlertTriangle, CheckCircle, Ban,
+  Search, X, Filter, FileText,
+  Clock, AlertTriangle, CheckCircle, Ban, Loader2,
 } from 'lucide-react';
+import Pagination from '@/components/ui/Pagination';
 
 const PAGE_SIZES = [10, 25, 50, 100];
 
@@ -42,8 +43,10 @@ export default function DepartmentSubmissionsPage() {
   const [limit, setLimit] = useState(() => parseInt(searchParams.get('limit')) || 25);
   const [total, setTotal] = useState(0);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [batchLoading, setBatchLoading] = useState(false);
 
   const handleBatchStatusChange = async (status) => {
+    setBatchLoading(true);
     try {
       const res = await departmentAPI.batchDocuments({
         ids: Array.from(selectedIds),
@@ -57,6 +60,8 @@ export default function DepartmentSubmissionsPage() {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update documents');
+    } finally {
+      setBatchLoading(false);
     }
   };
 
@@ -313,44 +318,7 @@ export default function DepartmentSubmissionsPage() {
                 {total === 0 ? '0' : `${(page - 1) * limit + 1}–${Math.min(page * limit, total)}`} of {total}
               </span>
             </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-                className="p-1.5 border rounded hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 7) {
-                  pageNum = i + 1;
-                } else if (page <= 4) {
-                  pageNum = i + 1;
-                } else if (page >= totalPages - 3) {
-                  pageNum = totalPages - 6 + i;
-                } else {
-                  pageNum = page - 3 + i;
-                }
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`w-7 h-7 rounded text-xs font-semibold transition ${page === pageNum ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 text-gray-600'}`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-                className="p-1.5 border rounded hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            <Pagination page={page} pages={totalPages} onPageChange={setPage} />
           </div>
         </div>
       )}
@@ -359,7 +327,7 @@ export default function DepartmentSubmissionsPage() {
       {selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white rounded-xl shadow-2xl px-6 py-3.5 flex items-center gap-6 z-50 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <span className="text-xs font-semibold text-slate-300">
-            {selectedIds.size} submission{selectedIds.size > 1 ? 's' : ''} selected
+            {batchLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Updating...</> : `${selectedIds.size} submission${selectedIds.size > 1 ? 's' : ''} selected`}
           </span>
           <div className="h-4 w-px bg-slate-800" />
           <div className="flex items-center gap-2">
@@ -368,7 +336,8 @@ export default function DepartmentSubmissionsPage() {
               <button
                 key={status}
                 onClick={() => handleBatchStatusChange(status)}
-                className={`px-2.5 py-1 text-[10px] font-bold rounded-lg capitalize transition-colors ${
+                disabled={batchLoading}
+                className={`px-2.5 py-1 text-[10px] font-bold rounded-lg capitalize transition-colors disabled:opacity-50 ${
                   status === 'completed'
                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     : status === 'blocked'
@@ -385,7 +354,8 @@ export default function DepartmentSubmissionsPage() {
           <div className="h-4 w-px bg-slate-800" />
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-slate-400 hover:text-white font-medium transition-colors"
+            disabled={batchLoading}
+            className="text-xs text-slate-400 hover:text-white font-medium transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

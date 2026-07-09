@@ -39,6 +39,7 @@ import {
   Clock,
   Sparkles,
   SlidersHorizontal,
+  Loader2,
 } from 'lucide-react';
 
 export default function AdminDocumentsExplorer() {
@@ -96,6 +97,8 @@ export default function AdminDocumentsExplorer() {
   const [isMobile, setIsMobile] = useState(false);
   const [confirmState, setConfirmState] = useState({ open: false, title: '', message: '', onConfirm: null, variant: 'danger' });
   const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [batchLoading, setBatchLoading] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -268,24 +271,44 @@ export default function AdminDocumentsExplorer() {
     }
   };
 
-  const handleBlock = async (docId) => {
-    try {
-      await adminAPI.blockDocument(docId);
-      toast.success('Document blocked for payment');
-      load();
-    } catch (err) {
-      toast.error('Failed to block document');
-    }
+  const handleBlock = (docId) => {
+    setConfirmState({
+      open: true,
+      title: 'Block Document for Payment?',
+      message: 'This will block the customer from downloading this document until payment is received.',
+      onConfirm: async () => {
+        try {
+          await adminAPI.blockDocument(docId);
+          toast.success('Document blocked for payment');
+          load();
+        } catch (err) {
+          toast.error('Failed to block document');
+        } finally {
+          setConfirmState(s => ({ ...s, open: false }));
+        }
+      },
+      variant: 'warning'
+    });
   };
 
-  const handleUnblock = async (docId) => {
-    try {
-      await adminAPI.unblockDocument(docId);
-      toast.success('Document unblocked');
-      load();
-    } catch (err) {
-      toast.error('Failed to unblock document');
-    }
+  const handleUnblock = (docId) => {
+    setConfirmState({
+      open: true,
+      title: 'Unblock Document?',
+      message: 'This will allow the customer to download this document again.',
+      onConfirm: async () => {
+        try {
+          await adminAPI.unblockDocument(docId);
+          toast.success('Document unblocked');
+          load();
+        } catch (err) {
+          toast.error('Failed to unblock document');
+        } finally {
+          setConfirmState(s => ({ ...s, open: false }));
+        }
+      },
+      variant: 'warning'
+    });
   };
 
   const handleDelete = (docId) => {
@@ -712,8 +735,70 @@ export default function AdminDocumentsExplorer() {
               </button>
             </div>
           )}
-        </div>
-      </div>
+</div>
+
+              {selectedIds.size > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white rounded-xl shadow-2xl px-6 py-3.5 flex items-center gap-6 z-50 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <span className="text-xs font-semibold text-slate-300">{selectedIds.size} document(s) selected</span>
+                  <div className="h-4 w-px bg-slate-800" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Status:</span>
+                    {['pending', 'processing', 'completed', 'blocked'].map((status) => (
+                      <button
+                        key={status}
+                        disabled={batchLoading}
+                        onClick={async () => {
+                          setBatchLoading(true);
+                          try {
+                            await adminAPI.batchDocuments({ ids: Array.from(selectedIds), action: 'status', status });
+                            toast.success(`Updated ${selectedIds.size} document(s) to ${status}`);
+                            setSelectedIds(new Set());
+                            load();
+                          } catch (err) {
+                            toast.error('Failed to update documents');
+                          } finally {
+                            setBatchLoading(false);
+                          }
+                        }}
+                        className={`px-2.5 py-1 text-[10px] font-bold rounded-lg capitalize transition-colors disabled:opacity-50 ${
+                          status === 'completed' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' :
+                          status === 'blocked' ? 'bg-rose-600 hover:bg-rose-700 text-white' :
+                          status === 'processing' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
+                          'bg-slate-700 hover:bg-slate-650 text-slate-200'
+                        }`}
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="h-4 w-px bg-slate-800" />
+                  <button
+                    disabled={batchLoading}
+                    onClick={async () => {
+                      setBatchLoading(true);
+                      try {
+                        await adminAPI.batchDocuments({ ids: Array.from(selectedIds), action: 'delete' });
+                        toast.success(`Deleted ${selectedIds.size} document(s)`);
+                        setSelectedIds(new Set());
+                        setSelectedItem(null);
+                        load();
+                      } catch (err) {
+                        toast.error('Failed to delete documents');
+                      } finally {
+                        setBatchLoading(false);
+                      }
+                    }}
+                    className="text-xs text-rose-400 hover:text-rose-300 font-medium disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
+                  <div className="h-4 w-px bg-slate-800" />
+                  <button onClick={() => setSelectedIds(new Set())} className="text-xs text-slate-400 hover:text-white font-medium transition-colors">
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
 
       {/* Filter Toolbar Sub-header */}
       <div className="h-9 bg-white dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between shrink-0 text-xs text-slate-600 dark:text-slate-400">
@@ -833,8 +918,8 @@ export default function AdminDocumentsExplorer() {
                 onKeyDown={e => { if (e.key === 'Enter') handleCreateFolder(); if (e.key === 'Escape') setShowCreateFolder(false); }}
                 className="flex-1 min-w-0 px-3 py-1.5 border border-blue-300 dark:border-blue-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-gray-900 dark:text-white"
               />
-              <button onClick={handleCreateFolder} disabled={creatingFolder} className="px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition">
-                {creatingFolder ? 'Creating...' : 'Create'}
+              <button onClick={handleCreateFolder} disabled={creatingFolder} className="px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition flex items-center gap-1.5">
+                {creatingFolder ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Creating...</> : 'Create'}
               </button>
               <button onClick={() => setShowCreateFolder(false)} className="px-3 py-1.5 border rounded-xl text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition">Cancel</button>
             </div>
@@ -867,8 +952,8 @@ export default function AdminDocumentsExplorer() {
                 <p className="text-xs text-blue-600 font-semibold">{uploadFiles.length} file(s) selected for upload</p>
               )}
               <div className="flex gap-2 justify-end">
-                <button onClick={handleUploadFiles} disabled={uploading || uploadFiles.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition">
-                  {uploading ? 'Uploading...' : 'Upload Files'}
+                <button onClick={handleUploadFiles} disabled={uploading || uploadFiles.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition flex items-center gap-1.5">
+                  {uploading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...</> : 'Upload Files'}
                 </button>
                 <button onClick={() => setShowUploadFiles(false)} className="px-3 py-2 border rounded-xl text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition">Cancel</button>
               </div>
@@ -883,6 +968,20 @@ export default function AdminDocumentsExplorer() {
                 <table className="w-full text-xs text-left">
                   <thead>
                     <tr className="border-b border-gray-200 dark:border-slate-800 font-semibold text-gray-400 uppercase tracking-wider cursor-pointer">
+                      <th className="py-2.5 px-3 w-10">
+                        <input
+                          type="checkbox"
+                          checked={searchedDocs.length > 0 && selectedIds.size === searchedDocs.length}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedIds(new Set(searchedDocs.map(d => d._id)));
+                            } else {
+                              setSelectedIds(new Set());
+                            }
+                          }}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                      </th>
                       <th className="py-2.5 px-3 hover:text-blue-600" onClick={() => handleHeaderClick('name')}>Name {sortField === 'name' ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : ''}</th>
                       <th className="py-2.5 px-3">Customer</th>
                       <th className="py-2.5 px-3">Department</th>
@@ -895,13 +994,26 @@ export default function AdminDocumentsExplorer() {
                       let comp = (a.title || a.originalName).localeCompare(b.title || b.originalName);
                       return sortOrder === 'asc' ? comp : -comp;
                     }).map((doc) => (
-                      <tr
-                        key={doc._id}
-                        onClick={() => handleSelectItem({ id: doc._id, name: doc.title || doc.originalName, type: 'file', doc })}
-                        onDoubleClick={() => setQuickLookItem({ id: doc._id, name: doc.title || doc.originalName, type: 'file', doc })}
-                        className={`cursor-pointer transition ${selectedItem?.id === doc._id ? 'bg-blue-600 text-white font-medium rounded-xl' : 'hover:bg-slate-200/50 dark:hover:bg-slate-800/60 text-gray-700 dark:text-gray-200'}`}
-                      >
-                        <td className="py-2.5 px-3 flex items-center gap-2 max-w-xs">
+<tr
+                          key={doc._id}
+                          onClick={() => handleSelectItem({ id: doc._id, name: doc.title || doc.originalName, type: 'file', doc })}
+                          onDoubleClick={() => setQuickLookItem({ id: doc._id, name: doc.title || doc.originalName, type: 'file', doc })}
+                          className={`cursor-pointer transition ${selectedItem?.id === doc._id ? 'bg-blue-600 text-white font-medium rounded-xl' : selectedIds.has(doc._id) ? 'bg-blue-50/75 font-medium' : 'hover:bg-slate-200/50 dark:hover:bg-slate-800/60 text-gray-700 dark:text-gray-200'}`}
+                        >
+                          <td className="py-2.5 px-3 w-10" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.has(doc._id)}
+                              onChange={(e) => {
+                                const newSelected = new Set(selectedIds);
+                                if (e.target.checked) newSelected.add(doc._id);
+                                else newSelected.delete(doc._id);
+                                setSelectedIds(newSelected);
+                              }}
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                            />
+                          </td>
+                          <td className="py-2.5 px-3 flex items-center gap-2 max-w-xs">
                           <FileText className={`w-4 h-4 shrink-0 ${selectedItem?.id === doc._id ? 'text-white' : 'text-blue-500'}`} />
                           <span className="truncate">{doc.title || doc.originalName}</span>
                         </td>
