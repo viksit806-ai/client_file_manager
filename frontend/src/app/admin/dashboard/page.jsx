@@ -6,16 +6,8 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import SlaBadge from '@/components/ui/SlaBadge';
 import { formatDateTime, getSlaStatus } from '@/lib/utils';
 import { toast } from 'sonner';
-import dynamic from 'next/dynamic';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Users, Building2, UserCircle, FileText, Clipboard, AlertCircle, AlertTriangle } from 'lucide-react';
-
-const BarChart = dynamic(() => import('recharts').then(m => m.BarChart), { ssr: false });
-const Bar = dynamic(() => import('recharts').then(m => m.Bar), { ssr: false });
-const XAxis = dynamic(() => import('recharts').then(m => m.XAxis), { ssr: false });
-const YAxis = dynamic(() => import('recharts').then(m => m.YAxis), { ssr: false });
-const CartesianGrid = dynamic(() => import('recharts').then(m => m.CartesianGrid), { ssr: false });
-const Tooltip = dynamic(() => import('recharts').then(m => m.Tooltip), { ssr: false });
-const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
@@ -35,6 +27,7 @@ export default function AdminDashboard() {
   const totalOverdue = (data.slaOverview || []).reduce((sum, d) => sum + d.overdue, 0);
   const totalApproaching = (data.slaOverview || []).reduce((sum, d) => sum + d.approaching, 0);
   const departmentsWithIssues = (data.slaOverview || []).filter(d => d.overdue > 0).length;
+  const chartColors = ['#0d9488', '#d4af37', '#a855f7', '#22c55e', '#3b82f6', '#f97316', '#06b6d4', '#ec4899'];
 
   return (
     <div>
@@ -64,7 +57,11 @@ export default function AdminDashboard() {
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {data.deptStats.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
